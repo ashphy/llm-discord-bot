@@ -25,11 +25,9 @@ export class LlmCommand extends Command {
 	) {
 		await interaction.deferReply();
 		const prompt = interaction.options.getString("prompt", true);
-		const userName = interaction.user.displayName;
-		console.log(
-			`User displayName:${interaction.user.displayName}, username:${interaction.user.username}, globalName: ${interaction.user.globalName}`,
-		);
-		console.log(`Mermber ${interaction.member?.user.username}`);
+		const member = interaction.guild?.members.cache.get(interaction.user.id);
+		const userName = member ? member.displayName : interaction.user.displayName;
+		console.log(`userName: ${userName}`);
 		const answer = await getCompletion(userName, prompt);
 		const message = `> ${prompt}
 ${answer}`;
