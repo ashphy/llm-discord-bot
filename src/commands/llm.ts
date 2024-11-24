@@ -25,7 +25,7 @@ export class LlmCommand extends Command {
 	) {
 		await interaction.deferReply();
 		const prompt = interaction.options.getString("prompt", true);
-		const userName = interaction.user.username;
+		const userName = interaction.user.displayName;
 		const answer = await getCompletion(userName, prompt);
 		const message = `> ${prompt}
 ${answer}`;
