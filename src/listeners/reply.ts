@@ -13,7 +13,7 @@ export class MessageReplyListener extends Listener {
 	}
 
 	public run(message: Message) {
-		console.log("Message received", message.author);
+		// console.log("Message received", message.author);
 
 		// ボットが送信したメッセージを無視
 		if (message.author.bot) {
