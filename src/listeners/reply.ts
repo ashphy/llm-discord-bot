@@ -1,5 +1,6 @@
 import { Listener } from "@sapphire/framework";
 import type { Message } from "discord.js";
+import { AiAgent } from "../lib/aiAgent.js";
 
 export class MessageReplyListener extends Listener {
 	public constructor(
@@ -12,12 +13,10 @@ export class MessageReplyListener extends Listener {
 		});
 	}
 
-	public run(message: Message) {
-		// console.log("Message received", message.author);
-
+	// AIに関する返信であれば、会話を継続する
+	public async run(message: Message) {
 		// ボットが送信したメッセージを無視
 		if (message.author.bot) {
-			console.log("Bot message");
 			return;
 		}
 
@@ -28,12 +27,21 @@ export class MessageReplyListener extends Listener {
 			);
 
 			if (!repliedMessage) {
-				console.log("Replied message not found");
 				return;
 			}
 
+			// Botへの返信なので、会話を継続する
+			const referenceMessageId = message.reference.messageId;
+			const userName = repliedMessage.author.username;
+			const userMessage = message.content;
+
 			// ここで返信メッセージに対して反応する処理を記述
-			console.log("Replied message");
+			const aiAgent = new AiAgent();
+			await aiAgent.load(referenceMessageId);
+			const answer = await aiAgent.thinkAnswer(userName, userMessage);
+
+			const answerMessage = await message.reply(answer);
+			await aiAgent.save(answerMessage.id);
 		}
 	}
 }
