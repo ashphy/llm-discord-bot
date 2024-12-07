@@ -20,3 +20,6 @@ primary_region = 'nrt'
   memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
+
+[env]
+  AWS_ROLE_ARN = "arn:aws:iam::285224135196:role/LLMDiscordBot"
