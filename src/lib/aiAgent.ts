@@ -52,7 +52,6 @@ export class AiAgent {
 	async load(messageId: string) {
 		// 会話履歴を取得
 		const messages = await readConversation(messageId);
-		console.log("Loaded message", messages);
 		this.messages = messages;
 	}
 
