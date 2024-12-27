@@ -34,9 +34,9 @@ export class MessageReplyListener extends Listener {
 		const userMessage = message.content;
 
 		// ここで返信メッセージに対して反応する処理を記述
-		const aiAgent = new AiAgent();
+		const aiAgent = new AiAgent(userName);
 		await aiAgent.load(referenceMessageId);
-		const answer = await aiAgent.thinkAnswer(userName, userMessage);
+		const answer = await aiAgent.thinkAnswer(userMessage);
 
 		const answerMessage = await message.reply(answer);
 		await aiAgent.save(answerMessage.id);

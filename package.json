@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "dotenvx run -- node dist/server.js",
-    "ngrok": "ngrok http 8787",
-    "register": "tsx src/register.ts"
+    "ngrok": "ngrok http 8787"
   },
   "keywords": [
     "LLM",
@@ -20,6 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.705.0",
     "@aws-sdk/lib-dynamodb": "^3.705.0",
+    "@google/generative-ai": "^0.21.0",
     "@sapphire/framework": "^5.3.0",
     "@t3-oss/env-core": "^0.11.1",
     "discord.js": "^14.16.3",

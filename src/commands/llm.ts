@@ -1,5 +1,6 @@
 import { Command } from "@sapphire/framework";
 import { AiAgent } from "../lib/aiAgent.js";
+import { Models, findModel } from "../lib/models.js";
 
 export class LlmCommand extends Command {
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -16,6 +17,16 @@ export class LlmCommand extends Command {
 						.setName("prompt")
 						.setDescription("The prompt to ask")
 						.setRequired(true),
+				)
+				.addStringOption((option) =>
+					option
+						.setName("model")
+						.setDescription("The model to use")
+						.addChoices(
+							Models.map((model) => {
+								return { name: model.label, value: model.id };
+							}),
+						),
 				),
 		);
 	}
@@ -28,10 +39,12 @@ export class LlmCommand extends Command {
 		const prompt = interaction.options.getString("prompt", true);
 		const member = interaction.guild?.members.cache.get(interaction.user.id);
 		const userName = member ? member.displayName : interaction.user.displayName;
+		const model = findModel(interaction.options.getString("model"));
+		if (model === undefined) throw new Error("Model not found");
 
 		// AIに問い合わせ
-		const aiAgent = new AiAgent();
-		const answer = await aiAgent.thinkAnswer(userName, prompt);
+		const aiAgent = new AiAgent(userName, model);
+		const answer = await aiAgent.thinkAnswer(prompt);
 
 		// Discordに送信するメッセージを作成
 		const message = `> ${prompt}

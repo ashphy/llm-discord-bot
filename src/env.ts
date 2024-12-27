@@ -7,6 +7,7 @@ export const env = createEnv({
 		// https://discord.com/developers/docs/tutorials/hosting-on-cloudflare-workers#creating-an-app-on-discord
 		BOT_TOKEN: z.string(),
 		OPENAI_API_KEY: z.string(),
+		GEMINI_API_KEY: z.string(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

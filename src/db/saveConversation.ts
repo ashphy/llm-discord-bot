@@ -1,19 +1,18 @@
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import type OpenAI from "openai";
+import type { Conversation } from "../lib/conversation.js";
 import { docClient } from "./dynnamodb.js";
 
 export const saveConversation = async (
-	messageId: string,
-	messages: OpenAI.ChatCompletionMessageParam[],
+	conversationId: string,
+	conversation: Conversation,
 ) => {
 	const command = new PutCommand({
 		TableName: "Conversations",
 		Item: {
-			MessageId: messageId,
-			Messages: messages,
+			MessageId: conversationId,
+			Conversation: conversation,
 		},
 	});
 
-	const response = await docClient.send(command);
-	return response;
+	return await docClient.send(command);
 };

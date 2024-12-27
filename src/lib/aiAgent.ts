@@ -1,6 +1,8 @@
-import type OpenAI from "openai";
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
+import type { Conversation } from "./conversation.js";
+import { getGeminiCompletion } from "./gemini.js";
+import { DefaultModel, type Model } from "./models.js";
 import { getCompletion } from "./openai.js";
 
 const SYSTEM_PROMPT_GAL = (
@@ -13,10 +15,14 @@ const SYSTEM_PROMPT_GAL = (
 問い合わせ者は「${username}」です。`;
 
 export class AiAgent {
-	messages: OpenAI.ChatCompletionMessageParam[];
+	conversation: Conversation;
 
-	constructor() {
-		this.messages = [];
+	constructor(username: string, model: Model = DefaultModel) {
+		this.conversation = {
+			model: model,
+			systemInstruction: SYSTEM_PROMPT_GAL(username),
+			messages: [],
+		};
 	}
 
 	/**
@@ -25,23 +31,34 @@ export class AiAgent {
 	 * @param userMesage
 	 * @returns
 	 */
-	async thinkAnswer(username: string, userMesage: string) {
-		this.initSystemPrompt(username);
-		this.messages.push({ role: "user", content: userMesage });
+	async thinkAnswer(userMesage: string) {
+		this.conversation.messages.push({ role: "user", content: userMesage });
 
-		const answer = await getCompletion(this.messages);
-		this.messages.push({ role: "assistant", content: answer });
-		return answer;
-	}
-
-	initSystemPrompt(username: string) {
-		if (this.messages.length === 0) {
-			this.messages = [
-				{
-					role: "system",
-					content: SYSTEM_PROMPT_GAL(username),
-				},
-			];
+		switch (this.conversation.model.provider) {
+			case "OpenAI": {
+				const answer = await getCompletion(
+					this.conversation.model.id,
+					this.conversation,
+				);
+				this.conversation.messages.push({
+					role: "assistant",
+					content: answer,
+				});
+				return answer;
+			}
+			case "Gemini": {
+				const answer = await getGeminiCompletion(
+					this.conversation.model.id,
+					this.conversation,
+				);
+				this.conversation.messages.push({
+					role: "assistant",
+					content: answer,
+				});
+				return answer;
+			}
+			default:
+				throw new Error("Unknown provider");
 		}
 	}
 
@@ -51,8 +68,10 @@ export class AiAgent {
 	 */
 	async load(messageId: string) {
 		// 会話履歴を取得
-		const messages = await readConversation(messageId);
-		this.messages = messages;
+		const conversation = await readConversation(messageId);
+		if (conversation) {
+			this.conversation = conversation;
+		}
 	}
 
 	/**
@@ -61,6 +80,6 @@ export class AiAgent {
 	 */
 	async save(messageId: string) {
 		// 会話履歴を保存
-		await saveConversation(messageId, this.messages);
+		await saveConversation(messageId, this.conversation);
 	}
 }

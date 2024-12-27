@@ -1,5 +1,5 @@
 import { GetCommand } from "@aws-sdk/lib-dynamodb";
-import type OpenAI from "openai";
+import type { Conversation } from "../lib/conversation.js";
 import { docClient } from "./dynnamodb.js";
 
 /**
@@ -7,19 +7,19 @@ import { docClient } from "./dynnamodb.js";
  * @param messageId
  */
 export const readConversation = async (
-	messageId: string,
-): Promise<OpenAI.ChatCompletionMessageParam[]> => {
+	conversationId: string,
+): Promise<Conversation | undefined> => {
 	const command = new GetCommand({
 		TableName: "Conversations",
 		Key: {
-			MessageId: messageId,
+			MessageId: conversationId,
 		},
 	});
 
 	const response = await docClient.send(command);
 	if (response.Item) {
-		return response.Item.Messages;
+		return response.Item.Conversation;
 	}
 
-	return [];
+	return undefined;
 };
