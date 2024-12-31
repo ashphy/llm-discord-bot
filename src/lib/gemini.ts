@@ -1,7 +1,15 @@
-import { type Content, GoogleGenerativeAI } from "@google/generative-ai";
+import {
+	type Content,
+	DynamicRetrievalMode,
+	GoogleGenerativeAI,
+	type ModelParams,
+} from "@google/generative-ai";
 import { env } from "../env.js";
+import type { GroundingMetadata } from "./GroundingMetadata.js";
 import type { Conversation, Message } from "./conversation.js";
 import type { ModelNames } from "./models.js";
+
+const GroundingModels: ModelNames[] = ["gemini-1.5-pro"];
 
 const convertRole = (message: Message): "user" | "model" => {
 	switch (message.role) {
@@ -38,17 +46,33 @@ const convertConversationToMessages = (
 };
 
 export const getGeminiCompletion = async (
-	model: ModelNames,
+	model: string,
 	conversation: Conversation,
 ): Promise<string> => {
 	const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 	const { systemInstruction, history, message } =
 		convertConversationToMessages(conversation);
 
-	const geminiModel = genAI.getGenerativeModel({
+	const modelParams: ModelParams = {
 		model: model,
 		systemInstruction: systemInstruction,
-	});
+	};
+
+	// 対応しているモデルにはGoogle検索を含める
+	if (GroundingModels.includes(model as ModelNames)) {
+		modelParams.tools = [
+			{
+				googleSearchRetrieval: {
+					dynamicRetrievalConfig: {
+						mode: DynamicRetrievalMode.MODE_DYNAMIC,
+						dynamicThreshold: 0.3,
+					},
+				},
+			},
+		];
+	}
+
+	const geminiModel = genAI.getGenerativeModel(modelParams);
 
 	const generationConfig = {
 		temperature: 1,
@@ -62,5 +86,20 @@ export const getGeminiCompletion = async (
 	});
 
 	const result = await chatSession.sendMessage(message);
+	const groundingMetadata = result.response.candidates?.[0]
+		.groundingMetadata as GroundingMetadata; // Gemini SDKの型定義が間違っている (https://github.com/google-gemini/generative-ai-js/issues/317)
+
+	if (groundingMetadata) {
+		const sources = groundingMetadata.groundingChunks
+			?.map((chunk) => {
+				return `1. [${chunk.web?.title}](${chunk.web?.uri})`;
+			})
+			.join("\n");
+		return `${result.response.text()}
+
+### 🔍検索ソース
+${sources}`;
+	}
+
 	return result.response.text();
 };

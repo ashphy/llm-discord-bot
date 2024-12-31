@@ -6,7 +6,7 @@ export type Model = {
 	provider: ProvierNames;
 };
 
-export const Models: Model[] = [
+export const Models = [
 	{
 		id: "gpt-4o",
 		label: "GPT-4o",
@@ -14,7 +14,7 @@ export const Models: Model[] = [
 	},
 	{
 		id: "gemini-1.5-pro",
-		label: "Gemini 1.5 Pro",
+		label: "Gemini 1.5 Pro + Google Search",
 		provider: "Gemini",
 	},
 	{
@@ -27,7 +27,7 @@ export const Models: Model[] = [
 		label: "Gemini 2.0 Flash Thinking Experimental",
 		provider: "Gemini",
 	},
-] as const;
+] as const satisfies Model[];
 
 export const DefaultModel = Models[0];
 

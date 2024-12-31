@@ -21,7 +21,7 @@ const convertConversationToMessages = (
 };
 
 export const getCompletion = async (
-	model: ModelNames,
+	model: string,
 	conversation: Conversation,
 ): Promise<string> => {
 	const client = new OpenAI({
