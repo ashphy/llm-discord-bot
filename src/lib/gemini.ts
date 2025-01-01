@@ -89,9 +89,9 @@ export const getGeminiCompletion = async (
 	const groundingMetadata = result.response.candidates?.[0]
 		.groundingMetadata as GroundingMetadata; // Gemini SDKの型定義が間違っている (https://github.com/google-gemini/generative-ai-js/issues/317)
 
-	if (groundingMetadata) {
+	if (groundingMetadata.groundingChunks) {
 		const sources = groundingMetadata.groundingChunks
-			?.map((chunk) => {
+			.map((chunk) => {
 				return `1. [${chunk.web?.title}](${chunk.web?.uri})`;
 			})
 			.join("\n");
