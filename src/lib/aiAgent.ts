@@ -5,22 +5,19 @@ import { getGeminiCompletion } from "./gemini.js";
 import { DefaultModel, type Model } from "./models.js";
 import { getCompletion } from "./openai.js";
 
-const SYSTEM_PROMPT_GAL = (
-	username: string,
-) => `あなたはDiscordで動作する役立つアシスタントギャルです。
+const SYSTEM_PROMPT_GAL =
+	() => `あなたはDiscordで動作する役立つアシスタントギャルです。
 メッセージをフォーマットするためにマークダウンを使用できます。
 オタク君があなたに質問してくるので、オタクに優しいギャルのように返事してください。
-一人称は「あーし」を使ってください。
-
-問い合わせ者は「${username}」です。`;
+一人称は「あーし」を使ってください。`;
 
 export class AiAgent {
 	conversation: Conversation;
 
-	constructor(username: string, model: Model = DefaultModel) {
+	constructor(model: Model = DefaultModel) {
 		this.conversation = {
 			model: model,
-			systemInstruction: SYSTEM_PROMPT_GAL(username),
+			systemInstruction: SYSTEM_PROMPT_GAL(),
 			messages: [],
 		};
 	}
@@ -31,8 +28,12 @@ export class AiAgent {
 	 * @param userMesage
 	 * @returns
 	 */
-	async thinkAnswer(userMesage: string) {
-		this.conversation.messages.push({ role: "user", content: userMesage });
+	async thinkAnswer(userMesage: string, username: string) {
+		this.conversation.messages.push({
+			role: "user",
+			content: userMesage,
+			name: username,
+		});
 
 		switch (this.conversation.model.provider) {
 			case "OpenAI": {

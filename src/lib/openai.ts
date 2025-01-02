@@ -11,9 +11,15 @@ const convertConversationToMessages = (
 		content: conversation.systemInstruction,
 	} as const;
 	const history = conversation.messages.map((message) => {
+		const content =
+			message.name === undefined
+				? String(message.content)
+				: `User Name: ${message.name}
+Query: ${String(message.content)}`;
 		return {
 			role: message.role,
-			content: message.content,
+			content: content,
+			name: message.name,
 		};
 	});
 

@@ -45,8 +45,8 @@ export class LlmCommand extends Command {
 
 		try {
 			// AIに問い合わせ
-			const aiAgent = new AiAgent(userName, model);
-			const answer = await aiAgent.thinkAnswer(prompt);
+			const aiAgent = new AiAgent(model);
+			const answer = await aiAgent.thinkAnswer(prompt, userName);
 
 			// Discordに送信するメッセージを作成
 			const message = `> ${prompt}

@@ -31,15 +31,15 @@ export class MessageReplyListener extends Listener {
 
 		// Botへの返信なので、会話を継続する
 		const referenceMessageId = message.reference.messageId;
-		const userName = repliedMessage.author.username;
+		const userName = message.author.username;
 		const userMessage = message.content;
 
 		// ここで返信メッセージに対して反応する処理を記述
-		const aiAgent = new AiAgent(userName);
+		const aiAgent = new AiAgent();
 		await aiAgent.load(referenceMessageId);
 
 		try {
-			const answer = await aiAgent.thinkAnswer(userMessage);
+			const answer = await aiAgent.thinkAnswer(userMessage, userName);
 			const chunks = sliceChunks(answer);
 
 			const answerMessage = await message.reply(answer);

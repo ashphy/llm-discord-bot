@@ -29,11 +29,16 @@ const convertConversationToMessages = (
 	const history = conversation.messages
 		.slice(0, conversation.messages.length)
 		.map((message) => {
+			const text =
+				message.name === undefined
+					? String(message.content)
+					: `User Name: ${message.name}
+Query: ${String(message.content)}`;
 			return {
 				role: convertRole(message),
 				parts: [
 					{
-						text: String(message.content),
+						text: text,
 					},
 				],
 			};
