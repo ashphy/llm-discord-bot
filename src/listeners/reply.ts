@@ -31,7 +31,8 @@ export class MessageReplyListener extends Listener {
 
 		// Botへの返信なので、会話を継続する
 		const referenceMessageId = message.reference.messageId;
-		const userName = message.author.username;
+		const member = message.guild?.members.cache.get(message.author.id);
+		const userName = member ? member.displayName : message.author.displayName;
 		const userMessage = message.content;
 
 		// ここで返信メッセージに対して反応する処理を記述
