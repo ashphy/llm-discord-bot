@@ -1,6 +1,7 @@
 import { Command } from "@sapphire/framework";
 import { AiAgent } from "../lib/aiAgent.js";
 import { Models, findModel } from "../lib/models.js";
+import { sliceChunks } from "../utils/sliceChunks.js";
 
 export class LlmCommand extends Command {
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -42,26 +43,37 @@ export class LlmCommand extends Command {
 		const model = findModel(interaction.options.getString("model"));
 		if (model === undefined) throw new Error("Model not found");
 
-		// AIに問い合わせ
-		const aiAgent = new AiAgent(userName, model);
-		const answer = await aiAgent.thinkAnswer(prompt);
+		try {
+			// AIに問い合わせ
+			const aiAgent = new AiAgent(userName, model);
+			const answer = await aiAgent.thinkAnswer(prompt);
 
-		// Discordに送信するメッセージを作成
-		const message = `> ${prompt}
+			// Discordに送信するメッセージを作成
+			const message = `> ${prompt}
 ${answer}`;
 
-		// Discordは2000文字以上のメッセージを送信できないため、分割して送信
-		const chunks = message.match(/[\s\S]{1,2000}/g) || [];
-		const replyMessage = await interaction.editReply({
-			content: chunks[0],
-		});
-		for (const chunk of chunks.slice(1)) {
-			await interaction.followUp({ content: chunk });
+			// Discordは2000文字以上のメッセージを送信できないため、分割して送信
+			const chunks = sliceChunks(message);
+			const replyMessage = await interaction.editReply({
+				content: chunks[0],
+			});
+			for (const chunk of chunks.slice(1)) {
+				await interaction.followUp({ content: chunk });
+			}
+			// 会話履歴を保存
+			const messageId = replyMessage.id;
+			aiAgent.save(messageId);
+		} catch (error) {
+			if (error instanceof Error) {
+				await interaction.editReply({
+					content: `エラーが発生しました: ${error.message}`,
+				});
+			} else {
+				await interaction.editReply({
+					content: `エラーが発生しました: ${error}`,
+				});
+			}
 		}
-
-		// 会話履歴を保存
-		const messageId = replyMessage.id;
-		aiAgent.save(messageId);
 
 		return;
 	}

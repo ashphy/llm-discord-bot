@@ -86,10 +86,11 @@ export const getGeminiCompletion = async (
 	});
 
 	const result = await chatSession.sendMessage(message);
-	const groundingMetadata = result.response.candidates?.[0]
-		.groundingMetadata as GroundingMetadata; // Gemini SDKの型定義が間違っている (https://github.com/google-gemini/generative-ai-js/issues/317)
+	const groundingMetadata = result.response.candidates?.[0].groundingMetadata as
+		| GroundingMetadata
+		| undefined; // Gemini SDKの型定義が間違っている (https://github.com/google-gemini/generative-ai-js/issues/317)
 
-	if (groundingMetadata.groundingChunks) {
+	if (groundingMetadata?.groundingChunks) {
 		const sources = groundingMetadata.groundingChunks
 			.map((chunk) => {
 				return `1. [${chunk.web?.title}](${chunk.web?.uri})`;

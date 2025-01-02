@@ -1,6 +1,7 @@
 import { Listener } from "@sapphire/framework";
 import type { Message } from "discord.js";
 import { AiAgent } from "../lib/aiAgent.js";
+import { sliceChunks } from "../utils/sliceChunks.js";
 
 export class MessageReplyListener extends Listener {
 	public constructor(
@@ -36,9 +37,27 @@ export class MessageReplyListener extends Listener {
 		// ここで返信メッセージに対して反応する処理を記述
 		const aiAgent = new AiAgent(userName);
 		await aiAgent.load(referenceMessageId);
-		const answer = await aiAgent.thinkAnswer(userMessage);
 
-		const answerMessage = await message.reply(answer);
-		await aiAgent.save(answerMessage.id);
+		try {
+			const answer = await aiAgent.thinkAnswer(userMessage);
+			const chunks = sliceChunks(answer);
+
+			const answerMessage = await message.reply(answer);
+			for (const chunk of chunks.slice(1)) {
+				await message.reply(chunk);
+			}
+
+			await aiAgent.save(answerMessage.id);
+		} catch (error) {
+			if (error instanceof Error) {
+				await message.reply({
+					content: `エラーが発生しました: ${error.message}`,
+				});
+			} else {
+				await message.reply({
+					content: `エラーが発生しました: ${error}`,
+				});
+			}
+		}
 	}
 }
