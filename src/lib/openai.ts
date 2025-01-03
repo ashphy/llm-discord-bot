@@ -19,7 +19,6 @@ Query: ${String(message.content)}`;
 		return {
 			role: message.role,
 			content: content,
-			name: message.name,
 		};
 	});
 
