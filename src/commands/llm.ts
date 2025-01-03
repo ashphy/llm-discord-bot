@@ -2,6 +2,7 @@ import { Command } from "@sapphire/framework";
 import { AiAgent } from "../lib/aiAgent.js";
 import { Models, findModel } from "../lib/models.js";
 import { sliceChunks } from "../utils/sliceChunks.js";
+import { snip } from "../utils/snip.js";
 
 export class LlmCommand extends Command {
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -49,7 +50,7 @@ export class LlmCommand extends Command {
 			const answer = await aiAgent.thinkAnswer(prompt, userName);
 
 			// Discordに送信するメッセージを作成
-			const message = `> ${prompt}
+			const message = `> ${snip(prompt)}
 ${answer}`;
 
 			// Discordは2000文字以上のメッセージを送信できないため、分割して送信
