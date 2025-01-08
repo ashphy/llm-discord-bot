@@ -1,5 +1,5 @@
 import { Listener } from "@sapphire/framework";
-import type { Message } from "discord.js";
+import { type Message, TextChannel } from "discord.js";
 import { AiAgent } from "../lib/aiAgent.js";
 import { sliceChunks } from "../utils/sliceChunks.js";
 
@@ -34,6 +34,10 @@ export class MessageReplyListener extends Listener {
 		const member = message.guild?.members.cache.get(message.author.id);
 		const userName = member ? member.displayName : message.author.displayName;
 		const userMessage = message.content;
+
+		if (message.channel instanceof TextChannel) {
+			await message.channel.sendTyping();
+		}
 
 		// ここで返信メッセージに対して反応する処理を記述
 		const aiAgent = new AiAgent();
