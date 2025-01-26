@@ -13,6 +13,11 @@ export const Models = [
 		provider: "OpenAI",
 	},
 	{
+		id: "claude-3-5-sonnet-20241022",
+		label: "Claude 3.5 Sonnet 20241022",
+		provider: "claude",
+	},
+	{
 		id: "gemini-1.5-pro",
 		label: "Gemini 1.5 Pro + Google Search",
 		provider: "Gemini",

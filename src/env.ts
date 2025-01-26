@@ -8,6 +8,7 @@ export const env = createEnv({
 		BOT_TOKEN: z.string(),
 		OPENAI_API_KEY: z.string(),
 		GEMINI_API_KEY: z.string(),
+		ANTHROPIC_API_KEY: z.string(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

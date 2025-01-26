@@ -1,5 +1,6 @@
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
+import { getClaudeCompletion } from "./claude.js";
 import type { Conversation } from "./conversation.js";
 import { getGeminiCompletion } from "./gemini.js";
 import { DefaultModel, type Model } from "./models.js";
@@ -49,6 +50,17 @@ export class AiAgent {
 			}
 			case "Gemini": {
 				const answer = await getGeminiCompletion(
+					this.conversation.model.id,
+					this.conversation,
+				);
+				this.conversation.messages.push({
+					role: "assistant",
+					content: answer,
+				});
+				return answer;
+			}
+			case "claude": {
+				const answer = await getClaudeCompletion(
 					this.conversation.model.id,
 					this.conversation,
 				);

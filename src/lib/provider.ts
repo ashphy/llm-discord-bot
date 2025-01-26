@@ -9,6 +9,9 @@ export const Proviers: Provider[] = [
 	{
 		id: "gemini",
 	},
+	{
+		id: "claude",
+	},
 ] as const;
 
 export type ProvierNames = (typeof Proviers)[number]["id"];

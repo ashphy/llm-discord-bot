@@ -1,14 +1,10 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../env.js";
 import type { Conversation } from "./conversation.js";
 
 const convertConversationToMessages = (
 	conversation: Conversation,
-): OpenAI.ChatCompletionMessageParam[] => {
-	const systemPrompt = {
-		role: "system",
-		content: conversation.systemInstruction,
-	} as const;
+): Anthropic.MessageParam[] => {
 	const history = conversation.messages.map((message) => {
 		const content =
 			message.name === undefined
@@ -21,22 +17,26 @@ Query: ${String(message.content)}`;
 		};
 	});
 
-	return [systemPrompt, ...history];
+	return history;
 };
 
-export const getCompletion = async (
+export const getClaudeCompletion = async (
 	model: string,
 	conversation: Conversation,
 ): Promise<string> => {
-	const client = new OpenAI({
-		apiKey: env.OPENAI_API_KEY,
+	const client = new Anthropic({
+		apiKey: env.ANTHROPIC_API_KEY, // This is the default and can be omitted
 	});
 
-	const chatCompletion = await client.chat.completions.create({
+	const message = await client.messages.create({
+		system: conversation.systemInstruction,
 		messages: convertConversationToMessages(conversation),
 		model: model,
-		max_tokens: 1000,
+		max_tokens: 2000,
 	});
 
-	return chatCompletion.choices[0].message.content || "";
+	return message.content
+		.filter((part) => part.type === "text")
+		.map((part) => part.text)
+		.join("\n");
 };
