@@ -35,7 +35,7 @@ export const getCompletion = async (
 	const chatCompletion = await client.chat.completions.create({
 		messages: convertConversationToMessages(conversation),
 		model: model,
-		max_tokens: 1000,
+		max_tokens: 2000,
 	});
 
 	return chatCompletion.choices[0].message.content || "";

@@ -81,7 +81,7 @@ export const getGeminiCompletion = async (
 
 	const generationConfig = {
 		temperature: 1,
-		maxOutputTokens: 1000,
+		maxOutputTokens: 4000,
 		responseMimeType: "text/plain",
 	};
 
