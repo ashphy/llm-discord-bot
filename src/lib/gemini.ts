@@ -33,6 +33,7 @@ const convertConversationToMessages = (
 				message.name === undefined
 					? String(message.content)
 					: `User Name: ${message.name}
+Datetime: ${message.datetime}
 Query: ${String(message.content)}`;
 			return {
 				role: convertRole(message),

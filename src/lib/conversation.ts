@@ -4,6 +4,7 @@ export type Message = {
 	role: "user" | "assistant";
 	content: string;
 	name?: string | undefined;
+	datetime?: string | undefined;
 };
 
 export type Conversation = {

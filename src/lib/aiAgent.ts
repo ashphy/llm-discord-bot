@@ -34,6 +34,7 @@ export class AiAgent {
 			role: "user",
 			content: userMesage,
 			name: username,
+			datetime: new Date().toISOString(),
 		});
 
 		switch (this.conversation.model.provider) {
