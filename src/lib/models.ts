@@ -13,8 +13,8 @@ export const Models = [
 		provider: "OpenAI",
 	},
 	{
-		id: "claude-3-5-sonnet-20241022",
-		label: "Claude 3.5 Sonnet 20241022",
+		id: "claude-3-7-sonnet-latest",
+		label: "Claude 3.7 Sonnet Latest",
 		provider: "claude",
 	},
 	{
