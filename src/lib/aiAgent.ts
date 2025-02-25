@@ -5,12 +5,7 @@ import type { Conversation } from "./conversation.js";
 import { getGeminiCompletion } from "./gemini.js";
 import { DefaultModel, type Model } from "./models.js";
 import { getCompletion } from "./openai.js";
-
-const SYSTEM_PROMPT_GAL =
-	() => `あなたはDiscordで動作する役立つアシスタントギャルです。
-メッセージをフォーマットするためにマークダウンを使用できます。
-オタク君があなたに質問してくるので、オタクに優しいギャルのように返事してください。
-一人称は「あーし」を使ってください。`;
+import { SYSTEM_PROMPT_GAL } from "./systemPrompt.js";
 
 export class AiAgent {
 	conversation: Conversation;
