@@ -1,19 +1,14 @@
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
-import { getClaudeCompletion } from "./claude.js";
+import { mastra } from "../mastra/index.js";
+import { convertResponseMessageToCoreMessage } from "../utils/convertResponseMessageToCoreMessage.js";
 import type { Conversation } from "./conversation.js";
-import { getGeminiCompletion } from "./gemini.js";
-import { DefaultModel, type Model } from "./models.js";
-import { getCompletion } from "./openai.js";
-import { SYSTEM_PROMPT_GAL } from "./systemPrompt.js";
 
 export class AiAgent {
 	conversation: Conversation;
 
-	constructor(model: Model = DefaultModel) {
+	constructor() {
 		this.conversation = {
-			model: model,
-			systemInstruction: SYSTEM_PROMPT_GAL(),
 			messages: [],
 		};
 	}
@@ -24,51 +19,62 @@ export class AiAgent {
 	 * @param userMesage
 	 * @returns
 	 */
-	async thinkAnswer(userMesage: string, username: string) {
+	async thinkAnswer(
+		userMesage: string,
+		username: string,
+		callbacks: {
+			onTextMessage?: (text: string) => Promise<void>;
+			onToolCall?: (toolName: string) => Promise<void>;
+			onError?: (error: unknown) => Promise<void>;
+			onFinish?: () => Promise<void>;
+			onStepStart?: () => Promise<void>;
+		} = {},
+	) {
 		this.conversation.messages.push({
 			role: "user",
-			content: userMesage,
-			name: username,
-			datetime: new Date().toISOString(),
+			content: `<username>${username}</username>
+<userMessage>${userMesage}</userMessage>`,
 		});
 
-		switch (this.conversation.model.provider) {
-			case "OpenAI": {
-				const answer = await getCompletion(
-					this.conversation.model.id,
-					this.conversation,
+		const agent = mastra.getAgent("discordAgent");
+		const stream = await agent.stream(this.conversation.messages, {
+			maxSteps: 10,
+			onFinish: (result) => {
+				const responseAssistantMessages = convertResponseMessageToCoreMessage(
+					result.response.messages,
 				);
-				this.conversation.messages.push({
-					role: "assistant",
-					content: answer,
-				});
-				return answer;
+				this.conversation.messages.push(...responseAssistantMessages);
+			},
+		});
+
+		let text = "";
+		for await (const chunk of stream.fullStream) {
+			switch (chunk.type) {
+				case "step-start":
+					await callbacks.onStepStart?.();
+					break;
+				case "text-delta":
+					text += chunk.textDelta;
+					break;
+				case "tool-call":
+					if (text.length > 0) {
+						await callbacks.onTextMessage?.(text);
+					}
+					text = "";
+					await callbacks.onToolCall?.(chunk.toolName);
+					break;
+				case "error":
+					await callbacks.onError?.(chunk.error);
+					break;
 			}
-			case "Gemini": {
-				const answer = await getGeminiCompletion(
-					this.conversation.model.id,
-					this.conversation,
-				);
-				this.conversation.messages.push({
-					role: "assistant",
-					content: answer,
-				});
-				return answer;
-			}
-			case "claude": {
-				const answer = await getClaudeCompletion(
-					this.conversation.model.id,
-					this.conversation,
-				);
-				this.conversation.messages.push({
-					role: "assistant",
-					content: answer,
-				});
-				return answer;
-			}
-			default:
-				throw new Error("Unknown provider");
 		}
+
+		if (text.length > 0) {
+			await callbacks.onTextMessage?.(text);
+		}
+
+		await callbacks.onFinish?.();
+		return text;
 	}
 
 	/**

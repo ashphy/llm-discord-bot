@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "start": "dotenvx run -- node dist/server.js",
-    "ngrok": "ngrok http 8787"
+    "ngrok": "ngrok http 8787",
+    "dev": "mastra dev",
+    "test": "dotenvx run -- tsx src/mastra/test.ts"
   },
   "keywords": [
     "LLM",
@@ -17,20 +19,36 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.11",
+    "@ai-sdk/google": "^1.2.18",
+    "@ai-sdk/openai": "^1.3.22",
+    "@ai-sdk/perplexity": "^1.1.9",
     "@anthropic-ai/sdk": "^0.36.2",
     "@aws-sdk/client-dynamodb": "^3.705.0",
     "@aws-sdk/lib-dynamodb": "^3.705.0",
+    "@formkit/tempo": "^0.1.2",
+    "@google/genai": "^0.14.1",
     "@google/generative-ai": "^0.21.0",
-    "@sapphire/framework": "^5.3.0",
+    "@mastra/core": "^0.9.4",
+    "@mastra/libsql": "^0.0.3",
+    "@mastra/memory": "^0.3.4",
+    "@mendable/firecrawl-js": "^1.24.0",
+    "@sapphire/framework": "^5.3.5",
     "@t3-oss/env-core": "^0.11.1",
-    "discord.js": "^14.16.3",
+    "ai": "^4.3.16",
+    "discord.js": "^14.14.1",
+    "es-toolkit": "^1.38.0",
+    "langfuse-vercel": "^3.37.2",
+    "mathjs": "^14.4.0",
     "openai": "^4.70.2",
-    "zod": "^3.23.8"
+    "ts-dedent": "^2.2.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@dotenvx/dotenvx": "^1.21.1",
     "@types/node": "^22.8.6",
+    "mastra": "^0.6.3",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }

@@ -1,7 +1,7 @@
 import { Listener } from "@sapphire/framework";
 import { type Message, TextChannel } from "discord.js";
 import { AiAgent } from "../lib/aiAgent.js";
-import { sliceChunks } from "../utils/sliceChunks.js";
+import { useReplyMessage } from "../lib/useReplyMessage.js";
 
 export class MessageReplyListener extends Listener {
 	public constructor(
@@ -35,24 +35,64 @@ export class MessageReplyListener extends Listener {
 		const userName = member ? member.displayName : message.author.displayName;
 		const userMessage = message.content;
 
+		let messageId = "";
+
 		if (message.channel instanceof TextChannel) {
 			await message.channel.sendTyping();
 		}
 
 		// ここで返信メッセージに対して反応する処理を記述
+		const { updateReplyMessage, write, getFirstMessageId } = useReplyMessage(
+			message,
+			[
+				{
+					type: "prompt",
+					prompt: userMessage,
+				},
+			],
+			{
+				onNewMessage: async (isFirst, currentMessage, text) => {
+					if (!currentMessage) throw new Error("Current message is undefined");
+					const message = await currentMessage?.reply({ content: text });
+					messageId = message.id;
+					return message;
+				},
+			},
+		);
+
 		const aiAgent = new AiAgent();
 		await aiAgent.load(referenceMessageId);
 
 		try {
-			const answer = await aiAgent.thinkAnswer(userMessage, userName);
-			const chunks = sliceChunks(answer);
-
-			const answerMessage = await message.reply(answer);
-			for (const chunk of chunks.slice(1)) {
-				await message.reply(chunk);
-			}
-
-			await aiAgent.save(answerMessage.id);
+			await aiAgent.thinkAnswer(userMessage, userName, {
+				onStepStart: async () => {
+					write();
+				},
+				onTextMessage: async (text) => {
+					await updateReplyMessage({
+						type: "text",
+						text,
+					});
+				},
+				onToolCall: async (toolName) => {
+					await updateReplyMessage({
+						type: "tool-call",
+						toolName,
+					});
+				},
+				onError: async (error) => {
+					await updateReplyMessage({
+						type: "error",
+						error: error,
+					});
+				},
+				onFinish: async () => {
+					const id = getFirstMessageId();
+					if (id) {
+						await aiAgent.save(id);
+					}
+				},
+			});
 		} catch (error) {
 			if (error instanceof Error) {
 				await message.reply({
