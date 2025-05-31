@@ -64,6 +64,7 @@ export class AiAgent {
 					await callbacks.onToolCall?.(chunk.toolName);
 					break;
 				case "error":
+					console.error("Error in AI agent:", chunk.error);
 					await callbacks.onError?.(chunk.error);
 					break;
 			}

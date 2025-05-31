@@ -24,13 +24,15 @@ export class LlmCommand extends Command {
 	public override async chatInputRun(
 		interaction: Command.ChatInputCommandInteraction,
 	) {
-		const reply = await interaction.deferReply();
-
-		const prompt = interaction.options.getString("prompt", true);
-		const member = interaction.guild?.members.cache.get(interaction.user.id);
-		const userName = member ? member.displayName : interaction.user.displayName;
-
 		try {
+			await interaction.deferReply();
+
+			const prompt = interaction.options.getString("prompt", true);
+			const member = interaction.guild?.members.cache.get(interaction.user.id);
+			const userName = member
+				? member.displayName
+				: interaction.user.displayName;
+
 			// AIに問い合わせ
 			const { updateReplyMessage, write, getFirstMessageId } = useReplyMessage(
 				undefined,
@@ -41,7 +43,7 @@ export class LlmCommand extends Command {
 					},
 				],
 				{
-					onNewMessage: async (isFirst, currentMessage, text) => {
+					onNewMessage: async (isFirst, _currentMessage, text) => {
 						if (isFirst) {
 							return await interaction.editReply({ content: text });
 						}
@@ -71,7 +73,7 @@ export class LlmCommand extends Command {
 				onError: async (error) => {
 					await updateReplyMessage({
 						type: "error",
-						error: JSON.stringify(error, null, 2),
+						error: error,
 					});
 				},
 				onFinish: async () => {
@@ -82,6 +84,7 @@ export class LlmCommand extends Command {
 				},
 			});
 		} catch (error) {
+			console.error("Error in LLM command:", error);
 			if (error instanceof Error) {
 				await interaction.editReply({
 					content: `エラーが発生しました: ${error.message}`,

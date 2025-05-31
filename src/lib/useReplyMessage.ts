@@ -1,5 +1,12 @@
-import type { Command } from "@sapphire/framework";
-import { ChannelType, type Message } from "discord.js";
+import { err } from "@sapphire/framework";
+import {
+	APICallError,
+	RetryError,
+	ToolExecutionError,
+	TypeValidationError,
+} from "ai";
+import type { Message } from "discord.js";
+import { e, re } from "mathjs";
 import { sliceChunks } from "../utils/sliceChunks.js";
 import { snip } from "../utils/snip.js";
 
@@ -17,7 +24,7 @@ const convertToolName = (toolName: string): string => {
 	const mapping: Record<string, string> = {
 		CodeExecutionTool: "Code Execution (gemini-2.5-pro-preview-05-06)",
 		MathTool: "Math Tool",
-		WebPageScrapingTool: "Web Page Scraping (FireCraw)",
+		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
 		WebResearchTool: "Web Research (Perplexity Sonar)",
 		CodeGenerationTool: "Code Generation (o4-mini)",
 		DeepThinkTool: "Deep Think (gemini-2.5-pro-preview-05-06)",
@@ -28,6 +35,30 @@ const convertToolName = (toolName: string): string => {
 	}
 
 	return toolName;
+};
+
+const converErrorMessage = (error: unknown): string => {
+	if (ToolExecutionError.isInstance(error)) {
+		return `ツール(${error.name})の実行中にエラーが発生しました: ${error.message}`;
+	}
+
+	if (TypeValidationError.isInstance(error)) {
+		return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
+	}
+
+	if (APICallError.isInstance(error)) {
+		return "API呼び出し中にエラーが発生しました";
+	}
+
+	if (RetryError.isInstance(error)) {
+		return `リトライエラーが発生しました: ${error.message}`;
+	}
+
+	if (error instanceof Error) {
+		return `エラーが発生しました: ${error.message}`;
+	}
+
+	return `エラーが発生しました: ${String(error)}`;
 };
 
 export function useReplyMessage(
@@ -58,11 +89,7 @@ export function useReplyMessage(
 					case "tool-call":
 						return `-# ▷ ${convertToolName(part.toolName)}`;
 					case "error": {
-						const errorMessage =
-							part.error instanceof Error
-								? part.error.message
-								: String(part.error);
-						return `エラーが発生しました: ${errorMessage}`;
+						return converErrorMessage(part.error);
 					}
 				}
 			})

@@ -51,7 +51,7 @@ export class MessageReplyListener extends Listener {
 				},
 			],
 			{
-				onNewMessage: async (isFirst, currentMessage, text) => {
+				onNewMessage: async (_isFirst, currentMessage, text) => {
 					if (!currentMessage) throw new Error("Current message is undefined");
 					const message = await currentMessage?.reply({ content: text });
 					messageId = message.id;
@@ -94,6 +94,7 @@ export class MessageReplyListener extends Listener {
 				},
 			});
 		} catch (error) {
+			console.error("Error in Reply Command:", error);
 			if (error instanceof Error) {
 				await message.reply({
 					content: `エラーが発生しました: ${error.message}`,
