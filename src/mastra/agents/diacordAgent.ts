@@ -8,6 +8,7 @@ import { CodeGenerationTool } from "../tools/CodeGeneration.js";
 import { DeepThinkTool } from "../tools/DeepThinkTool.js";
 import { WebPageScrapingTool } from "../tools/WebPageScrapingTool.js";
 import { WebResearchTool } from "../tools/WebResearchTool.js";
+import { YouTubeAnalysisTool } from "../tools/YouTubeAnalysisTool.js";
 
 export const discordAgent = new Agent({
 	defaultStreamOptions: {
@@ -36,5 +37,6 @@ export const discordAgent = new Agent({
 		CodeExecutionTool,
 		CodeGenerationTool,
 		DeepThinkTool,
+		YouTubeAnalysisTool,
 	},
 });
