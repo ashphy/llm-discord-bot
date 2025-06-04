@@ -3,6 +3,7 @@ import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
 import { convertResponseMessageToCoreMessage } from "../utils/convertResponseMessageToCoreMessage.js";
 import type { Conversation } from "./conversation.js";
+import { moderate } from "./moderation.js";
 
 export class AiAgent {
 	conversation: Conversation;
@@ -30,6 +31,13 @@ export class AiAgent {
 			onStepStart?: () => Promise<void>;
 		} = {},
 	) {
+		const isModerationFlagged = await moderate(userMesage);
+		if (isModerationFlagged) {
+			throw new Error(
+				"このリクエストはモデレーションフィルタにより制限されました。",
+			);
+		}
+
 		this.conversation.messages.push({
 			role: "user",
 			content: `<username>${username}</username>
