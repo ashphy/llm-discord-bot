@@ -1,4 +1,3 @@
-import { err } from "@sapphire/framework";
 import {
 	APICallError,
 	RetryError,
@@ -6,7 +5,6 @@ import {
 	TypeValidationError,
 } from "ai";
 import type { Message } from "discord.js";
-import { e, re } from "mathjs";
 import { sliceChunks } from "../utils/sliceChunks.js";
 import { snip } from "../utils/snip.js";
 
@@ -22,12 +20,12 @@ export type ReplyPart =
 
 const convertToolName = (toolName: string): string => {
 	const mapping: Record<string, string> = {
-		CodeExecutionTool: "Code Execution (gemini-2.5-pro-preview-05-06)",
+		CodeExecutionTool: "Code Execution (gemini-2.5-pro-preview-06-05)",
 		MathTool: "Math Tool",
 		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
 		WebResearchTool: "Web Research (Perplexity Sonar)",
 		CodeGenerationTool: "Code Generation (o4-mini)",
-		DeepThinkTool: "Deep Think (gemini-2.5-pro-preview-05-06)",
+		DeepThinkTool: "Deep Think (gemini-2.5-pro-preview-06-05)",
 		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash-preview-05-20)",
 	};
 
