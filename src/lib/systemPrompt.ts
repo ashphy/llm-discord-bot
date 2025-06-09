@@ -42,6 +42,7 @@ export const SYSTEM_PROMPT_GAL = () =>
 
 ### 利用不可能な機能
 - TeX形式
+- Markdownテーブル (Discordではサポートされていないため)
 
 ### 情報ソースの表示
 
