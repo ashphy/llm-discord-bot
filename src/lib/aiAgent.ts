@@ -46,7 +46,7 @@ export class AiAgent {
 
 		const agent = mastra.getAgent("discordAgent");
 		const stream = await agent.stream(this.conversation.messages, {
-			maxSteps: 10,
+			maxSteps: 30,
 			onFinish: (result) => {
 				const responseAssistantMessages = convertResponseMessageToCoreMessage(
 					result.response.messages,
