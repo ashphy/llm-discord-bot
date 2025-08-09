@@ -20,13 +20,13 @@ export type ReplyPart =
 
 const convertToolName = (toolName: string): string => {
 	const mapping: Record<string, string> = {
-		CodeExecutionTool: "Code Execution (gemini-2.5-pro-preview-06-05)",
+		CodeExecutionTool: "Code Execution (gemini-2.5-pro)",
 		MathTool: "Math Tool",
 		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
 		WebResearchTool: "Web Research (Perplexity Sonar)",
 		CodeGenerationTool: "Code Generation (o4-mini)",
-		DeepThinkTool: "Deep Think (gemini-2.5-pro-preview-06-05)",
-		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash-preview-05-20)",
+		DeepThinkTool: "Deep Think (gemini-2.5-pro)",
+		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash)",
 	};
 
 	if (toolName in mapping) {
