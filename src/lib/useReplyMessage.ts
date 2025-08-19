@@ -24,7 +24,7 @@ const convertToolName = (toolName: string): string => {
 		MathTool: "Math Tool",
 		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
 		WebResearchTool: "Web Research (Perplexity Sonar)",
-		CodeGenerationTool: "Code Generation (o4-mini)",
+		CodeGenerationTool: "Code Generation (GPT-5)",
 		DeepThinkTool: "Deep Think (gemini-2.5-pro)",
 		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash)",
 	};
