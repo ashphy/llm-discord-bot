@@ -3,6 +3,7 @@ import { Agent } from "@mastra/core/agent";
 import { LibSQLStore } from "@mastra/libsql";
 import { Memory } from "@mastra/memory";
 import { SYSTEM_PROMPT_GAL } from "../../lib/systemPrompt.js";
+import { mcp } from "../mcp-servers/context7.js";
 import { CodeExecutionTool } from "../tools/CodeExecutionTool.js";
 import { CodeGenerationTool } from "../tools/CodeGeneration.js";
 import { DeepThinkTool } from "../tools/DeepThinkTool.js";
@@ -38,5 +39,6 @@ export const discordAgent = new Agent({
 		CodeGenerationTool,
 		DeepThinkTool,
 		YouTubeAnalysisTool,
+		...(await mcp.getTools()),
 	},
 });

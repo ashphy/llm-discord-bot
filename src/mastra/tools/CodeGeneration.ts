@@ -1,65 +1,63 @@
 import { openai } from "@ai-sdk/openai";
 import { createTool } from "@mastra/core";
-import { generateText } from "ai";
+import { generateObject } from "ai";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
 
+const OutputSchema = z.object({
+	code: z.string().describe("The generated code"),
+	language: z
+		.string()
+		.describe("The programming language of the generated code"),
+	description: z
+		.string()
+		.optional()
+		.describe("Brief description of what the code does"),
+});
+
 export const CodeGenerationTool = createTool({
-	id: "Code Generation",
-	description: dedent`This tool generates program code based on the given specification using an LLM (Large Language Model).`,
+	id: "code-generation",
+	description: dedent`Generates program code based on detailed specifications using an LLM (Large Language Model).
+		Supports multiple programming languages and frameworks with proper Discord formatting.`,
 	inputSchema: z.object({
 		specification: z
 			.string()
 			.describe(
-				"A detailed description of the program or code you want the LLM to generate.",
+				"A detailed description of the program or code you want the LLM to generate. Include language, framework, and specific requirements.",
 			),
 	}),
-	outputSchema: z.object({
-		code: z.string().describe("The generated code"),
-		language: z
-			.string()
-			.describe("The programming language of the generated code"),
-		description: z
-			.string()
-			.optional()
-			.describe("Brief description of what the code does"),
-	}),
+	outputSchema: OutputSchema,
 	execute: async ({ context }) => {
 		try {
-			const { text } = await generateText({
-				model: openai("gpt-5"),
-				system: dedent`You are **CodeGen**, a concise code generation sub-agent designed to operate within a Discord environment. Your goals:
+			const { object } = await generateObject({
+				model: openai("gpt-4o"),
+				system: dedent`You are **CodeGen**, a concise code generation agent for Discord environments.
 
-1. **Focus on Essentials**: Provide only the minimal amount of code necessary to satisfy the user's request. Omit full project boilerplate (e.g., package.json, full HTML scaffolding).
-2. **Be Succinct**: Keep code snippets compact (ideally under 50 lines). Use clear, consistent formatting and appropriate syntax highlighting.
-3. **Clarify When Needed**: If the user's request lacks important details (e.g., target language, framework), ask one precise follow-up question before generating code.
-4. **Context Awareness**: Assume the user is working in a typical environment for the requested language or framework (e.g., Node.js for JavaScript). Do not include unnecessary imports unless they are essential.
-5. **Use Markdown**: Wrap code blocks in triple backticks with the correct language identifier to ensure proper formatting in Discord.
-6. **Comment Sparingly**: Include comments only when they add crucial understanding or highlight non-obvious logic.
-7. **Return JSON Format**: Return your response as a JSON object with fields: "code" (the code block with markdown formatting), "language" (programming language), and optionally "description" (brief explanation).
-8. **Ensure Discord Compatibility**: Make sure code blocks are properly formatted for Discord display with appropriate syntax highlighting.
+**Core Principles:**
+1. **Essential Code Only**: Provide minimal, functional code without unnecessary boilerplate
+2. **Compact & Clear**: Keep snippets under 50 lines with consistent formatting
+3. **Discord-Ready**: Format code blocks with proper language identifiers for Discord syntax highlighting
+4. **Context-Aware**: Assume standard environments (Node.js for JavaScript, etc.)
 
-Always aim for clarity, brevity, and direct fulfillment of the user's request. Return only the JSON object.`,
+**Response Format:**
+Return a JSON object with:
+- "code": Complete code block with markdown formatting (triple backticks + language)
+- "language": Programming language identifier
+- "description": Brief explanation (optional)
+
+**Guidelines:**
+- Use triple backticks with language identifiers for code blocks
+- Include comments only for complex logic
+- Ask clarifying questions if requirements are unclear
+- When using specific libraries/frameworks, reference context7 for documentation
+
+Return only the JSON object.`,
 				prompt: context.specification,
+				schema: OutputSchema,
 				temperature: 1,
 			});
 
-			// Parse the JSON response
-			try {
-				const parsed = JSON.parse(text);
-				return {
-					code: parsed.code || text,
-					language: parsed.language || "text",
-					description: parsed.description,
-				};
-			} catch (parseError) {
-				// Fallback: treat as raw code if JSON parsing fails
-				return {
-					code: text,
-					language: "text",
-					description: undefined,
-				};
-			}
+			return object;
 		} catch (error) {
 			throw new Error(
 				`Code generation failed: ${error instanceof Error ? error.message : String(error)}`,
