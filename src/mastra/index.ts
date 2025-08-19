@@ -1,5 +1,5 @@
 import { Mastra } from "@mastra/core";
-import { createLogger } from "@mastra/core/logger";
+import { ConsoleLogger } from "@mastra/core/logger";
 
 import { LibSQLStore } from "@mastra/libsql";
 import { discordAgent } from "./agents/diacordAgent.js";
@@ -9,7 +9,7 @@ export const mastra = new Mastra({
 	storage: new LibSQLStore({
 		url: ":memory:",
 	}),
-	logger: createLogger({
+	logger: new ConsoleLogger({
 		name: "Mastra",
 		level: "info",
 	}),
