@@ -51,9 +51,9 @@ export class MessageReplyListener extends Listener {
 				},
 			],
 			{
-				onNewMessage: async (_isFirst, currentMessage, text) => {
+				onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
 					if (!currentMessage) throw new Error("Current message is undefined");
-					const message = await currentMessage?.reply({ content: text });
+					const message = await currentMessage?.reply(messageOptions);
 					messageId = message.id;
 					return message;
 				},

@@ -43,12 +43,12 @@ export class LlmCommand extends Command {
 					},
 				],
 				{
-					onNewMessage: async (isFirst, _currentMessage, text) => {
+					onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
 						if (isFirst) {
-							return await interaction.editReply({ content: text });
+							return await interaction.editReply(messageOptions);
 						}
 
-						return await interaction.followUp({ content: text });
+						return await interaction.followUp(messageOptions);
 					},
 				},
 			);
