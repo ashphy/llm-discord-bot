@@ -17,7 +17,7 @@ export const discordAgent = new Agent({
 	},
 	name: "Discord Agent",
 	instructions: () => SYSTEM_PROMPT_GAL(),
-	model: anthropic("claude-sonnet-4-20250514"),
+	model: anthropic("claude-sonnet-4-5-20250929"),
 	memory: new Memory({
 		storage: new LibSQLStore({
 			url: ":memory:",
