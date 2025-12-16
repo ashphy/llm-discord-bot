@@ -10,12 +10,7 @@
  * - プロンプト、テキスト、ツール実行、エラーなど異なる種類のメッセージパートを管理
  * - スラッシュコマンド (/llm) と返信メッセージの両方に対応
  */
-import {
-	APICallError,
-	RetryError,
-	ToolExecutionError,
-	TypeValidationError,
-} from "ai";
+import { APICallError, RetryError, TypeValidationError } from "ai";
 import { AttachmentBuilder, type Message } from "discord.js";
 import { sliceChunks } from "../utils/sliceChunks.js";
 import { snip } from "../utils/snip.js";
@@ -78,10 +73,6 @@ const convertToolName = (toolName: string): string => {
  * @returns ユーザー表示用の日本語エラーメッセージ
  */
 const converErrorMessage = (error: unknown): string => {
-	if (ToolExecutionError.isInstance(error)) {
-		return `ツール(${error.name})の実行中にエラーが発生しました: ${error.message}`;
-	}
-
 	if (TypeValidationError.isInstance(error)) {
 		return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
 	}

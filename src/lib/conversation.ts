@@ -1,5 +1,5 @@
-import type { CoreMessage } from "ai";
+import type { ModelMessage } from "ai";
 
 export type Conversation = {
-	messages: CoreMessage[];
+	messages: ModelMessage[];
 };

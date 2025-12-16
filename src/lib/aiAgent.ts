@@ -1,7 +1,6 @@
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
-import { convertResponseMessageToCoreMessage } from "../utils/convertResponseMessageToCoreMessage.js";
 import type { Conversation } from "./conversation.js";
 import { moderate } from "./moderation.js";
 
@@ -48,10 +47,9 @@ export class AiAgent {
 		const stream = await agent.stream(this.conversation.messages, {
 			maxSteps: 30,
 			onFinish: (result) => {
-				const responseAssistantMessages = convertResponseMessageToCoreMessage(
-					result.response.messages,
-				);
-				this.conversation.messages.push(...responseAssistantMessages);
+				if (result.response.messages) {
+					this.conversation.messages.push(...result.response.messages);
+				}
 			},
 		});
 
@@ -62,18 +60,18 @@ export class AiAgent {
 					await callbacks.onStepStart?.();
 					break;
 				case "text-delta":
-					text += chunk.textDelta;
+					text += chunk.payload.text;
 					break;
 				case "tool-call":
 					if (text.length > 0) {
 						await callbacks.onTextMessage?.(text);
 					}
 					text = "";
-					await callbacks.onToolCall?.(chunk.toolName);
+					await callbacks.onToolCall?.(chunk.payload.toolName);
 					break;
 				case "error":
-					console.error("Error in AI agent:", chunk.error);
-					await callbacks.onError?.(JSON.stringify(chunk.error));
+					console.error("Error in AI agent:", chunk.payload.error);
+					await callbacks.onError?.(JSON.stringify(chunk.payload.error));
 					break;
 			}
 		}
