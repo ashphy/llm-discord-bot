@@ -54,7 +54,7 @@ const convertToolName = (toolName: string): string => {
 		WebResearchTool: "Web Research (Perplexity Sonar)",
 		CodeGenerationTool: "Code Generation (gpt-5.2)",
 		DeepThinkTool: "Deep Think (gemini-3-pro-preview)",
-		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash)",
+		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash-preview-09-2025)",
 	};
 
 	if (toolName in mapping) {
