@@ -23,7 +23,7 @@ export const DeepThinkTool = createTool({
 	}),
 	execute: async ({ context: { question } }) => {
 		const { text, sources } = await generateText({
-			model: google("gemini-2.5-pro"),
+			model: google("gemini-3-pro-preview"),
 			prompt: question,
 		});
 
