@@ -30,7 +30,7 @@ export const CodeGenerationTool = createTool({
 	execute: async ({ context }) => {
 		try {
 			const { object } = await generateObject({
-				model: openai("gpt-4o"),
+				model: openai("gpt-5.2"),
 				system: dedent`You are **CodeGen**, a concise code generation agent for Discord environments.
 
 **Core Principles:**
