@@ -29,6 +29,8 @@ export class LlmCommand extends Command {
 
 			const prompt = interaction.options.getString("prompt", true);
 			const member = interaction.guild?.members.cache.get(interaction.user.id);
+
+			const userId = interaction.user.id;
 			const userName = member
 				? member.displayName
 				: interaction.user.displayName;
@@ -54,7 +56,7 @@ export class LlmCommand extends Command {
 			);
 
 			const aiAgent = new AiAgent();
-			await aiAgent.thinkAnswer(prompt, userName, {
+			await aiAgent.thinkAnswer(prompt, userId, userName, {
 				onStepStart: async () => {
 					write();
 				},

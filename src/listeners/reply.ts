@@ -32,7 +32,10 @@ export class MessageReplyListener extends Listener {
 		// Botへの返信なので、会話を継続する
 		const referenceMessageId = message.reference.messageId;
 		const member = message.guild?.members.cache.get(message.author.id);
+
+		const userId = message.author.id;
 		const userName = member ? member.displayName : message.author.displayName;
+
 		const userMessage = message.content;
 
 		let messageId = "";
@@ -64,7 +67,7 @@ export class MessageReplyListener extends Listener {
 		await aiAgent.load(referenceMessageId);
 
 		try {
-			await aiAgent.thinkAnswer(userMessage, userName, {
+			await aiAgent.thinkAnswer(userMessage, userId, userName, {
 				onStepStart: async () => {
 					write();
 				},

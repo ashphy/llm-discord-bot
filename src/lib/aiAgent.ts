@@ -1,8 +1,14 @@
+import { run } from "node:test";
+import { RuntimeContext } from "@mastra/core/runtime-context";
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
 import type { Conversation } from "./conversation.js";
 import { moderate } from "./moderation.js";
+
+type LLMBotRuntimeContext = {
+	userId: string;
+};
 
 export class AiAgent {
 	conversation: Conversation;
@@ -21,6 +27,7 @@ export class AiAgent {
 	 */
 	async thinkAnswer(
 		userMesage: string,
+		userId: string,
 		username: string,
 		callbacks: {
 			onTextMessage?: (text: string) => Promise<void>;
@@ -43,9 +50,13 @@ export class AiAgent {
 <userMessage>${userMesage}</userMessage>`,
 		});
 
+		const runtimeContext = new RuntimeContext<LLMBotRuntimeContext>();
+		runtimeContext.set("userId", userId);
+
 		const agent = mastra.getAgent("discordAgent");
 		const stream = await agent.stream(this.conversation.messages, {
 			maxSteps: 30,
+			runtimeContext,
 			onFinish: (result) => {
 				if (result.response.messages) {
 					this.conversation.messages.push(...result.response.messages);
@@ -67,7 +78,9 @@ export class AiAgent {
 						await callbacks.onTextMessage?.(text);
 					}
 					text = "";
-					await callbacks.onToolCall?.(chunk.payload.toolName);
+					if (chunk.payload.toolName !== "UpdateWorkingMemoryTool") {
+						await callbacks.onToolCall?.(chunk.payload.toolName);
+					}
 					break;
 				case "error":
 					console.error("Error in AI agent:", chunk.payload.error);
