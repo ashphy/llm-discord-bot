@@ -73,6 +73,7 @@ export const SYSTEM_PROMPT_GAL = (workingMemoryBlock?: string) =>
 ### 利用不可能な機能
 - TeX形式
 - Markdownテーブル (Discordではサポートされていないため)
+- 水平線 (---) ※区切りは見出し・空行・ラベル付き箇条書きを使うこと
 
 ### 表形式の代替（必須）
 表を出力したい場合は、**必ず「箇条書き＋ラベル形式」**で出力してください。  
