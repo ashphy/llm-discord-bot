@@ -62,6 +62,11 @@ export class MessageReplyListener extends Listener {
 						messageId = message.id;
 						return message;
 					},
+					onTyping: async () => {
+						if (message.channel instanceof TextChannel) {
+							await message.channel.sendTyping();
+						}
+					},
 				},
 			);
 
