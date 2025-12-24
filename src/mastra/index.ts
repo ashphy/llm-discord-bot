@@ -13,4 +13,7 @@ export const mastra = new Mastra({
 		name: "Mastra",
 		level: "info",
 	}),
+	telemetry: {
+		enabled: false,
+	},
 });
