@@ -216,6 +216,7 @@ export function useReplyMessage(
 			currentMessage: Message<boolean> | undefined,
 			messageOptions: { content: string; files?: AttachmentBuilder[] },
 		) => Promise<Message<boolean>>;
+		onTyping?: () => Promise<void>;
 	} = {},
 ) {
 	const replyParts: ReplyPart[] = initialReplyParts;
@@ -223,6 +224,12 @@ export function useReplyMessage(
 	let currentReplyIndex = 0;
 	let currentMessage: Message<boolean> | undefined;
 	let firstMessageId: string | undefined;
+
+	const intervalId = setInterval(async () => {
+		if (callbacks.onTyping) {
+			await callbacks.onTyping();
+		}
+	}, 10000 /* 10sec */);
 
 	/**
 	 * メッセージパーツの配列をDiscord表示用のテキストと添付ファイルに変換する内部関数
@@ -325,16 +332,10 @@ export function useReplyMessage(
 	};
 
 	/**
-	 * タイピング表示を開始する関数（現在は未実装）
-	 * AIエージェントが処理を開始したことをユーザーに示すために使用されます。
-	 *
-	 * TODO: 将来的にはチャンネルでのタイピング表示機能を実装予定
+	 * メッセージの最終化を行う関数
 	 */
-	const write = () => {
-		// const channel = interaction?.channel;
-		// if (channel?.type === ChannelType.GuildText) {
-		// 	channel.sendTyping();
-		// }
+	const finishMessage = () => {
+		clearInterval(intervalId);
 	};
 
 	/**
@@ -355,5 +356,5 @@ export function useReplyMessage(
 	 * @returns {Function} write - タイピング表示開始（未実装）
 	 * @returns {Function} getFirstMessageId - 最初のメッセージID取得
 	 */
-	return { updateReplyMessage, write, getFirstMessageId };
+	return { updateReplyMessage, getFirstMessageId, finishMessage };
 }

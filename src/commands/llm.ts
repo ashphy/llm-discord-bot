@@ -36,30 +36,35 @@ export class LlmCommand extends Command {
 				: interaction.user.displayName;
 
 			// AIに問い合わせ
-			const { updateReplyMessage, write, getFirstMessageId } = useReplyMessage(
-				undefined,
-				[
+			const { updateReplyMessage, getFirstMessageId, finishMessage } =
+				useReplyMessage(
+					undefined,
+					[
+						{
+							type: "prompt",
+							prompt,
+						},
+					],
 					{
-						type: "prompt",
-						prompt,
-					},
-				],
-				{
-					onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
-						if (isFirst) {
-							return await interaction.editReply(messageOptions);
-						}
+						onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
+							if (isFirst) {
+								return await interaction.editReply(messageOptions);
+							}
 
-						return await interaction.followUp(messageOptions);
+							return await interaction.followUp(messageOptions);
+						},
+						onTyping: async () => {
+							const channel = interaction.channel;
+							if (channel && "sendTyping" in channel) {
+								await channel.sendTyping();
+							}
+						},
 					},
-				},
-			);
+				);
 
 			const aiAgent = new AiAgent();
 			await aiAgent.thinkAnswer(prompt, userId, userName, {
-				onStepStart: async () => {
-					write();
-				},
+				onStepStart: async () => {},
 				onTextMessage: async (text) => {
 					await updateReplyMessage({
 						type: "text",
@@ -77,8 +82,10 @@ export class LlmCommand extends Command {
 						type: "error",
 						error: error,
 					});
+					finishMessage();
 				},
 				onFinish: async () => {
+					finishMessage();
 					const id = getFirstMessageId();
 					if (id) {
 						await aiAgent.save(id);

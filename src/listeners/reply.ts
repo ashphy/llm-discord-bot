@@ -45,32 +45,32 @@ export class MessageReplyListener extends Listener {
 		}
 
 		// ここで返信メッセージに対して反応する処理を記述
-		const { updateReplyMessage, write, getFirstMessageId } = useReplyMessage(
-			message,
-			[
+		const { updateReplyMessage, getFirstMessageId, finishMessage } =
+			useReplyMessage(
+				message,
+				[
+					{
+						type: "prompt",
+						prompt: userMessage,
+					},
+				],
 				{
-					type: "prompt",
-					prompt: userMessage,
+					onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
+						if (!currentMessage)
+							throw new Error("Current message is undefined");
+						const message = await currentMessage?.reply(messageOptions);
+						messageId = message.id;
+						return message;
+					},
 				},
-			],
-			{
-				onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
-					if (!currentMessage) throw new Error("Current message is undefined");
-					const message = await currentMessage?.reply(messageOptions);
-					messageId = message.id;
-					return message;
-				},
-			},
-		);
+			);
 
 		const aiAgent = new AiAgent();
 		await aiAgent.load(referenceMessageId);
 
 		try {
 			await aiAgent.thinkAnswer(userMessage, userId, userName, {
-				onStepStart: async () => {
-					write();
-				},
+				onStepStart: async () => {},
 				onTextMessage: async (text) => {
 					await updateReplyMessage({
 						type: "text",
@@ -88,8 +88,10 @@ export class MessageReplyListener extends Listener {
 						type: "error",
 						error: error,
 					});
+					finishMessage();
 				},
 				onFinish: async () => {
+					finishMessage();
 					const id = getFirstMessageId();
 					if (id) {
 						await aiAgent.save(id);
