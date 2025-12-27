@@ -225,7 +225,7 @@ export function useReplyMessage(
 	let currentMessage: Message<boolean> | undefined;
 	let firstMessageId: string | undefined;
 
-	const intervalId = setInterval(async () => {
+	const typingTimerId = setInterval(async () => {
 		if (callbacks.onTyping) {
 			await callbacks.onTyping();
 		}
@@ -335,7 +335,7 @@ export function useReplyMessage(
 	 * メッセージの最終化を行う関数
 	 */
 	const finishMessage = () => {
-		clearInterval(intervalId);
+		clearInterval(typingTimerId);
 	};
 
 	/**

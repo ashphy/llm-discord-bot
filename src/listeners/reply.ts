@@ -93,10 +93,8 @@ export class MessageReplyListener extends Listener {
 						type: "error",
 						error: error,
 					});
-					finishMessage();
 				},
 				onFinish: async () => {
-					finishMessage();
 					const id = getFirstMessageId();
 					if (id) {
 						await aiAgent.save(id);
@@ -114,6 +112,8 @@ export class MessageReplyListener extends Listener {
 					content: `エラーが発生しました: ${error}`,
 				});
 			}
+		} finally {
+			finishMessage();
 		}
 	}
 }
