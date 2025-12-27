@@ -145,8 +145,27 @@ const getFileExtension = (language: string): string => {
 };
 
 /**
+ * 言語ごとのファイル化閾値を取得する
+ * シェルスクリプト系の言語は短いコマンド例が多いため、閾値を高く設定します。
+ *
+ * @param language プログラミング言語名
+ * @returns ファイル化する最小行数
+ */
+const getMinCodeLines = (language: string): number => {
+	const thresholds: Record<string, number> = {
+		shell: 15,
+		bash: 15,
+		sh: 15,
+		powershell: 15,
+	};
+
+	const normalizedLanguage = language.toLowerCase().trim();
+	return thresholds[normalizedLanguage] ?? 10;
+};
+
+/**
  * テキストからコードブロックを検出し、長いものをファイル添付用データに変換する関数
- * 6行以上のコードブロックを検出し、AttachmentBuilderとして準備します。
+ * コードブロックを検出し、言語ごとの閾値以上の行数の場合AttachmentBuilderとして準備します。
  *
  * @param text 解析対象のテキスト
  * @returns 変換結果（変更後のテキストと添付ファイル配列）
@@ -160,7 +179,6 @@ const extractLargeCodeBlocks = (
 	const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
 	const attachments: AttachmentBuilder[] = [];
 	let fileCounter = 1;
-	const minCodeLines = 6;
 
 	const modifiedText = text.replace(codeBlockRegex, (match, language, code) => {
 		const trimmedCode = code.trim();
@@ -168,7 +186,8 @@ const extractLargeCodeBlocks = (
 		// コードの行数をカウント（空行も含む）
 		const lineCount = trimmedCode.split("\n").length;
 
-		// コードが6行以上の場合のみファイル化
+		// 言語ごとの閾値以上の場合のみファイル化
+		const minCodeLines = getMinCodeLines(language);
 		if (lineCount >= minCodeLines) {
 			const extension = getFileExtension(language);
 			const filename = `code_${fileCounter}${extension}`;
