@@ -51,7 +51,7 @@ const convertToolName = (toolName: string): string => {
 		CodeExecutionTool: "Code Execution (gemini-2.5-pro)",
 		MathTool: "Math Tool",
 		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
-		WebResearchTool: "Web Research (Perplexity Sonar)",
+		WebResearchTool: "Web Research (gemini-3-flash-preview with Google Search)",
 		CodeGenerationTool: "Code Generation (gpt-5.2)",
 		DeepThinkTool: "Deep Think (gemini-3-pro-preview)",
 		YouTubeAnalysisTool: "YouTube Analysis (gemini-2.5-flash-preview-09-2025)",

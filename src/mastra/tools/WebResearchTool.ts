@@ -1,12 +1,12 @@
-import { perplexity } from "@ai-sdk/perplexity";
+import { type GoogleGenerativeAIProviderOptions, google } from "@ai-sdk/google";
 import { createTool } from "@mastra/core";
 import { generateText } from "ai";
 import { z } from "zod";
 
 export const WebResearchTool = createTool({
 	id: "Web Research",
-	description: `Search the web for up-to-date information using Perplexity's advanced web research capabilities. 
-This tool sends your query to Perplexity, which retrieves and summarizes relevant information from the internet in real time. 
+	description: `Search the web for up-to-date information using Google Search. 
+This tool sends your query to Google Gemini, which retrieves and summarizes relevant information from the internet in real time. 
 Use this tool to answer questions that require current or factual data from the web.`,
 	inputSchema: z.object({
 		question: z
@@ -17,8 +17,19 @@ Use this tool to answer questions that require current or factual data from the 
 	}),
 	execute: async ({ context: { question } }) => {
 		const { text, sources } = await generateText({
-			model: perplexity("sonar"),
+			model: google("gemini-3-flash-preview"),
 			prompt: question,
+			tools: {
+				google_search: google.tools.googleSearch({}),
+			},
+			providerOptions: {
+				google: {
+					thinkingConfig: {
+						thinkingLevel: "minimal",
+						includeThoughts: false,
+					},
+				} satisfies GoogleGenerativeAIProviderOptions,
+			},
 		});
 
 		return { text, sources };
