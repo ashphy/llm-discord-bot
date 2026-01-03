@@ -24,44 +24,42 @@ export class LlmCommand extends Command {
 	public override async chatInputRun(
 		interaction: Command.ChatInputCommandInteraction,
 	) {
-		try {
-			await interaction.deferReply();
+		await interaction.deferReply();
 
-			const prompt = interaction.options.getString("prompt", true);
-			const member = interaction.guild?.members.cache.get(interaction.user.id);
+		const prompt = interaction.options.getString("prompt", true);
+		const member = interaction.guild?.members.cache.get(interaction.user.id);
 
-			const userId = interaction.user.id;
-			const userName = member
-				? member.displayName
-				: interaction.user.displayName;
+		const userId = interaction.user.id;
+		const userName = member ? member.displayName : interaction.user.displayName;
 
-			// AIに問い合わせ
-			const { updateReplyMessage, getFirstMessageId, finishMessage } =
-				useReplyMessage(
-					undefined,
-					[
-						{
-							type: "prompt",
-							prompt,
-						},
-					],
+		// AIに問い合わせ
+		const { updateReplyMessage, getFirstMessageId, finishMessage } =
+			useReplyMessage(
+				undefined,
+				[
 					{
-						onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
-							if (isFirst) {
-								return await interaction.editReply(messageOptions);
-							}
-
-							return await interaction.followUp(messageOptions);
-						},
-						onTyping: async () => {
-							const channel = interaction.channel;
-							if (channel && "sendTyping" in channel) {
-								await channel.sendTyping();
-							}
-						},
+						type: "prompt",
+						prompt,
 					},
-				);
+				],
+				{
+					onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
+						if (isFirst) {
+							return await interaction.editReply(messageOptions);
+						}
 
+						return await interaction.followUp(messageOptions);
+					},
+					onTyping: async () => {
+						const channel = interaction.channel;
+						if (channel && "sendTyping" in channel) {
+							await channel.sendTyping();
+						}
+					},
+				},
+			);
+
+		try {
 			const aiAgent = new AiAgent();
 			await aiAgent.thinkAnswer(prompt, userId, userName, {
 				onStepStart: async () => {},
@@ -82,10 +80,8 @@ export class LlmCommand extends Command {
 						type: "error",
 						error: error,
 					});
-					finishMessage();
 				},
 				onFinish: async () => {
-					finishMessage();
 					const id = getFirstMessageId();
 					if (id) {
 						await aiAgent.save(id);
@@ -103,6 +99,8 @@ export class LlmCommand extends Command {
 					content: `エラーが発生しました: ${error}`,
 				});
 			}
+		} finally {
+			finishMessage();
 		}
 
 		return;

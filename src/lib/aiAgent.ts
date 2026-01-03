@@ -37,18 +37,18 @@ export class AiAgent {
 			onStepStart?: () => Promise<void>;
 		} = {},
 	) {
-		const isModerationFlagged = await moderate(userMesage);
-		if (isModerationFlagged) {
-			throw new Error(
-				"このリクエストはモデレーションフィルタにより制限されました。",
-			);
-		}
-
 		this.conversation.messages.push({
 			role: "user",
 			content: `<username>${username}</username>
 <userMessage>${userMesage}</userMessage>`,
 		});
+
+		const isModerationFlagged = await moderate(this.conversation.messages);
+		if (isModerationFlagged) {
+			throw new Error(
+				"このリクエストはモデレーションフィルタにより制限されました。",
+			);
+		}
 
 		const runtimeContext = new RuntimeContext<LLMBotRuntimeContext>();
 		runtimeContext.set("userId", userId);
