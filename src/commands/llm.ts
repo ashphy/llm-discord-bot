@@ -42,6 +42,7 @@ export class LlmCommand extends Command {
 						prompt,
 					},
 				],
+				false,
 				{
 					onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
 						if (isFirst) {

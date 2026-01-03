@@ -229,6 +229,7 @@ const extractLargeCodeBlocks = (
 export function useReplyMessage(
 	initialMessage: Message<boolean> | undefined,
 	initialReplyParts: ReplyPart[] = [],
+	reply = false,
 	callbacks: {
 		onNewMessage?: (
 			isFirst: boolean,
@@ -270,8 +271,14 @@ export function useReplyMessage(
 		const textParts = replyParts
 			.map((part) => {
 				switch (part.type) {
-					case "prompt":
-						return `> ${snip(part.prompt)}`;
+					case "prompt": {
+						if (reply) return undefined;
+						const lines = snip(part.prompt)
+							.split(/\r\n|\n|\r/)
+							.slice(0, 3);
+						const quotedLines = lines.map((line) => `> ${line}`);
+						return quotedLines.join("\n");
+					}
 					case "text": {
 						// テキスト部分から長いコードブロックを抽出してファイル化
 						const { modifiedText, attachments } = extractLargeCodeBlocks(
@@ -287,6 +294,7 @@ export function useReplyMessage(
 					}
 				}
 			})
+			.filter((line) => line !== undefined)
 			.join("\n");
 
 		return { text: textParts, attachments: allAttachments };

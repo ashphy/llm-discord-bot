@@ -54,6 +54,7 @@ export class MessageReplyListener extends Listener {
 						prompt: userMessage,
 					},
 				],
+				true,
 				{
 					onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
 						if (!currentMessage)
