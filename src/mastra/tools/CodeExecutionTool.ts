@@ -20,7 +20,7 @@ export const CodeExecutionTool = createTool({
 	execute: async ({ context }) => {
 		const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
 		const response = await ai.models.generateContent({
-			model: "gemini-2.5-pro",
+			model: "gemini-3.1-pro-preview",
 			contents: [context.specification],
 			config: {
 				tools: [{ codeExecution: {} }],
