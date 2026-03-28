@@ -5,8 +5,8 @@ const openai = new OpenAI({
 	apiKey: env.OPENAI_API_KEY,
 });
 
-export const moderate = async (messages: ModelMessage[]) => {
-	const input = messages
+export const extractTextFromMessages = (messages: ModelMessage[]): string[] => {
+	return messages
 		.map((msg) => {
 			switch (msg.role) {
 				case "system":
@@ -39,6 +39,10 @@ export const moderate = async (messages: ModelMessage[]) => {
 			}
 		})
 		.filter((msg) => msg !== undefined);
+};
+
+export const moderate = async (messages: ModelMessage[]) => {
+	const input = extractTextFromMessages(messages);
 
 	const moderation = await openai.moderations.create({
 		model: "omni-moderation-latest",

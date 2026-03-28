@@ -46,7 +46,7 @@ export type ReplyPart =
  * @param toolName 内部的なツール名（例: "CodeExecutionTool"）
  * @returns ユーザー表示用の名前（例: "Code Execution (gemini-2.5-pro)"）
  */
-const convertToolName = (toolName: string): string => {
+export const convertToolName = (toolName: string): string => {
 	const mapping: Record<string, string> = {
 		CodeExecutionTool: "Code Execution (gemini-3.1-pro-preview)",
 		MathTool: "Math Tool",
@@ -72,7 +72,7 @@ const convertToolName = (toolName: string): string => {
  * @param error 変換対象のエラーオブジェクト
  * @returns ユーザー表示用の日本語エラーメッセージ
  */
-const converErrorMessage = (error: unknown): string => {
+export const converErrorMessage = (error: unknown): string => {
 	if (TypeValidationError.isInstance(error)) {
 		return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
 	}
@@ -99,7 +99,7 @@ const converErrorMessage = (error: unknown): string => {
  * @param language プログラミング言語名（例: "javascript", "python", "typescript"）
  * @returns ファイル拡張子（例: ".js", ".py", ".ts"）
  */
-const getFileExtension = (language: string): string => {
+export const getFileExtension = (language: string): string => {
 	const extensionMapping: Record<string, string> = {
 		javascript: ".js",
 		js: ".js",
@@ -151,7 +151,7 @@ const getFileExtension = (language: string): string => {
  * @param language プログラミング言語名
  * @returns ファイル化する最小行数
  */
-const getMinCodeLines = (language: string): number => {
+export const getMinCodeLines = (language: string): number => {
 	const thresholds: Record<string, number> = {
 		shell: 15,
 		bash: 15,
@@ -170,7 +170,7 @@ const getMinCodeLines = (language: string): number => {
  * @param text 解析対象のテキスト
  * @returns 変換結果（変更後のテキストと添付ファイル配列）
  */
-const extractLargeCodeBlocks = (
+export const extractLargeCodeBlocks = (
 	text: string,
 ): {
 	modifiedText: string;
