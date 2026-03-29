@@ -6,7 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"start": "dotenvx run -- node dist/src/server.js",
+		"start": "dotenvx run -- node dist/server.js",
 		"ngrok": "ngrok http 8787",
 		"dev": "mastra dev",
 		"test": "vitest run",
