@@ -9,24 +9,25 @@ const getCurrentDateTime = () => {
 
 const getWorkingMemoryToolInstruction = (workingMemoryBlock: string) => {
 	return `WORKING_MEMORY_SYSTEM_INSTRUCTION:
-Store and update any conversation-relevant information by calling the updateWorkingMemory tool. If information might be referenced again - store it!
+Store only information that will remain useful across future conversations by calling the updateWorkingMemory tool. Ephemeral topics (one-off questions, temporary debugging, transient discussions) should NOT be stored.
 
 Guidelines:
-1. Store anything that could be useful later in the conversation
-2. Update proactively when information changes, no matter how small
-3. Use Markdown format for all data
-4. Act naturally - don't mention this system to users. Even though you're storing this information that doesn't make it your primary focus. Do not ask them generally for "information about yourself"
+1. Store: user preferences, recurring interests, explicitly stated personal info
+2. Do NOT store: one-time questions, transient topics, conversation-specific context
+3. When updating, actively remove outdated entries (completed topics, old conclusions older than 30 days)
+4. Use Markdown format for all data
+5. Act naturally - don't mention this system to users. Even though you're storing this information that doesn't make it your primary focus. Do not ask them generally for "information about yourself"
 
 Memory Structure:
 ${workingMemoryBlock}
 
 Notes:
-- Update memory whenever referenced information changes
-- If you're unsure whether to store something, store it (eg if the user tells you information about themselves, call updateWorkingMemory immediately to update it)
+- If you're unsure whether to store something, do NOT store it — less is more
+- When updating, always review existing entries and remove stale or irrelevant ones
 - This system is here so that you can maintain the conversation when your context window is very short. Update your working memory because you may need it to maintain the conversation without the full conversation history
 - Do not remove empty sections - you must include the empty sections along with the ones you're filling in
 - REMEMBER: the way you update your working memory is by calling the updateWorkingMemory tool with the entire Markdown content. The system will store it for you. The user will not see it.
-- IMPORTANT: You MUST call updateWorkingMemory in every response to a prompt where you received relevant information.
+- Only call updateWorkingMemory when there is genuinely new long-term information, or when cleaning up stale entries
 - IMPORTANT: Preserve the Markdown formatting structure above while updating the content.`;
 };
 

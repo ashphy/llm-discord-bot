@@ -4,9 +4,9 @@ import { docClient } from "./dynnamodb.js";
 
 const MEMORY_TEMPLATE = `# 🧠 Working Memory
 
-> This memory is maintained to improve long-term conversation quality.
-> Only explicitly stated facts are promoted. Assumptions are marked separately.
-> Old or irrelevant information should be summarized, updated, or removed.
+> This memory stores only long-term useful information.
+> One-time questions or transient topics should NOT be recorded here.
+> Actively remove outdated or irrelevant entries to keep memory concise.
 
 ---
 
@@ -15,80 +15,43 @@ const MEMORY_TEMPLATE = `# 🧠 Working Memory
 - **Name / Preferred Address**:
 - **Language / Tone**: (e.g. English – casual / polite)
 - **Timezone / Region**:
-- **Preferred Units**: (currency, temperature, time format, etc.)
 - **General Interests**:
-  - 
+  -
 - **Topics to Avoid (Explicitly Stated)**:
-  - 
-
-## 🎯 Usage Goals & Expectations (Mid-term)
-
-- **Primary Use Cases**:
-  - Daily lookups / research
-  - Casual advice & consultation
-  - Idea brainstorming
-- **Expected Role of the Bot**:
-  - (e.g. neutral thinking partner, supportive advisor)
-- **What the User Values Most**:
-  - (e.g. clarity, empathy, speed, accuracy)
+  -
 
 ## 🧩 Conversation Style Preferences
 
 - **Preferred Answer Length**:
   - Short / Medium / Detailed
-- **Preferred Structure**:
-  - Bullet points / Paragraphs / Mixed
-- **Questioning Style**:
-  - Proceed with assumptions / Ask before proceeding
 - **Tone Preference**:
   - Friendly / Calm / Analytical
 
 ## 📌 Important Principles & Preferences
 
-- 
-- 
-
-> Examples:
-> - "Practicality over theory when unsure"
-> - "Avoid overly definitive claims"
+-
+-
 
 ---
 
-## 🛠 Common Context & Environment
+## 🔄 Recurring Interests (Long-term only, Max 3 items)
 
-- **Devices / OS**:
-- **Frequently Used Tools / Services**:
-  - 
-- **Constraints (time, budget, etc.)**:
-  - 
+- (一時的なトピックは記録しない。繰り返し話題に上がるものだけ記録)
+-
 
 ---
 
-## 🔄 Ongoing Topics & Interests (Short–Mid Term)
+## 💡 Key Learnings (Max 5 items — oldest-out when full)
 
-| Topic | Status | Notes | Last Updated |
-|------|--------|-------|--------------|
-|      |        |       |              |
-
-> Status examples: Exploring / Deciding / Paused / Completed
-
----
-
-## 💡 Key Past Conclusions & Learnings
-
-- **[YYYY-MM-DD]**
-  - Summary:
-  - Context / Reasoning:
-- 
-
-> Store only distilled conclusions to reduce repetition.
+- (30日以上経過したものは削除する)
+-
 
 ---
 
 ## ⚠️ Warnings, Boundaries & Explicit NOs
 
-- 
-- 
+-
+-
 
 > Only include items clearly stated by the user.
 
@@ -96,19 +59,21 @@ const MEMORY_TEMPLATE = `# 🧠 Working Memory
 
 ## 🧪 Assumptions & Tentative Notes (Low Confidence)
 
-- 
-- 
+-
+-
 
-> Promote to official sections only after user confirmation.
+> Promote to official sections only after 2 conversations confirming.
+> Delete if not confirmed within 2 conversations.
 
 ---
 
 ## 🧹 Memory Management (Internal)
 
 - **Last Updated**:
-- **Review / Expiration Date for Tentative Notes**:
-- **Candidates for Removal**:
-  -
+- **Max total lines**: 60行を超えたら古い・重要度の低い情報から削除
+- **Recurring Interests**: 最大3件。完了・30日経過したものは削除
+- **Key Learnings**: 最大5件。古いものから削除
+- **Tentative Notes**: 2回の会話で確認されなければ削除
 `;
 
 /**
