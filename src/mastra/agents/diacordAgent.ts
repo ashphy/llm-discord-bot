@@ -23,7 +23,7 @@ export const discordAgent = new Agent({
 		const workingMemory = await readWorkingMemory(userId);
 		return SYSTEM_PROMPT_GAL(workingMemory?.memory);
 	},
-	model: anthropic("claude-sonnet-4-5-20250929"),
+	model: anthropic("claude-sonnet-4-6"),
 	memory: new Memory({
 		storage: new LibSQLStore({
 			url: ":memory:",
