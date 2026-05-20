@@ -17,7 +17,7 @@ Use this tool to answer questions that require current or factual data from the 
 	}),
 	execute: async ({ context: { question } }) => {
 		const { text, sources } = await generateText({
-			model: google("gemini-3-flash-preview"),
+			model: google("gemini-3.5-flash"),
 			prompt: question,
 			tools: {
 				google_search: google.tools.googleSearch({}),
