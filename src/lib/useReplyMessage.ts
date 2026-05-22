@@ -51,10 +51,10 @@ export const convertToolName = (toolName: string): string => {
 		CodeExecutionTool: "Code Execution (gemini-3.1-pro-preview)",
 		MathTool: "Math Tool",
 		WebPageScrapingTool: "Web Page Scraping (FireCrawl)",
-		WebResearchTool: "Web Research (gemini-3-flash-preview with Google Search)",
+		WebResearchTool: "Web Research (gemini-3.5-flash with Google Search)",
 		CodeGenerationTool: "Code Generation (gpt-5.2)",
 		DeepThinkTool: "Deep Think (gemini-3.1-pro-preview)",
-		YouTubeAnalysisTool: "YouTube Analysis (gemini-3-flash-preview)",
+		YouTubeAnalysisTool: "YouTube Analysis (gemini-3.5-flash)",
 	};
 
 	if (toolName in mapping) {
