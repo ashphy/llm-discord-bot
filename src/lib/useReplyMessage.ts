@@ -75,7 +75,7 @@ const ERROR_MESSAGE_THRESHOLD = 1000;
  * @param error 変換対象のエラーオブジェクト
  * @returns ユーザー表示用の日本語エラーメッセージ
  */
-export const converErrorMessage = (error: unknown): string => {
+export const convertErrorMessage = (error: unknown): string => {
 	const message = ((): string => {
 		if (TypeValidationError.isInstance(error)) {
 			return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
@@ -297,7 +297,7 @@ export function useReplyMessage(
 					case "tool-call":
 						return `-# ▷ ${convertToolName(part.toolName)}`;
 					case "error": {
-						return converErrorMessage(part.error);
+						return convertErrorMessage(part.error);
 					}
 				}
 			})

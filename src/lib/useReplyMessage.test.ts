@@ -1,7 +1,7 @@
 import { APICallError, TypeValidationError } from "ai";
 import { describe, expect, it } from "vitest";
 import {
-	converErrorMessage,
+	convertErrorMessage,
 	convertToolName,
 	extractLargeCodeBlocks,
 	getFileExtension,
@@ -40,26 +40,26 @@ describe("convertToolName", () => {
 	});
 });
 
-describe("converErrorMessage", () => {
+describe("convertErrorMessage", () => {
 	it("通常のErrorオブジェクトを日本語メッセージに変換する", () => {
 		const error = new Error("something broke");
-		expect(converErrorMessage(error)).toBe(
+		expect(convertErrorMessage(error)).toBe(
 			"エラーが発生しました: something broke",
 		);
 	});
 
 	it("文字列エラーを変換する", () => {
-		expect(converErrorMessage("raw string")).toBe(
+		expect(convertErrorMessage("raw string")).toBe(
 			"エラーが発生しました: raw string",
 		);
 	});
 
 	it("数値エラーを変換する", () => {
-		expect(converErrorMessage(42)).toBe("エラーが発生しました: 42");
+		expect(convertErrorMessage(42)).toBe("エラーが発生しました: 42");
 	});
 
 	it("nullを変換する", () => {
-		expect(converErrorMessage(null)).toBe("エラーが発生しました: null");
+		expect(convertErrorMessage(null)).toBe("エラーが発生しました: null");
 	});
 
 	it("APICallErrorを変換する", () => {
@@ -70,7 +70,7 @@ describe("converErrorMessage", () => {
 			statusCode: 500,
 			isRetryable: false,
 		});
-		expect(converErrorMessage(error)).toBe(
+		expect(convertErrorMessage(error)).toBe(
 			"API呼び出し中にエラーが発生しました",
 		);
 	});
