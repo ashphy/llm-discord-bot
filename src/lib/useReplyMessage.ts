@@ -64,6 +64,9 @@ export const convertToolName = (toolName: string): string => {
 	return toolName;
 };
 
+/** エラーメッセージの最大表示文字数（Discordの2000文字制限に対する余裕分） */
+const ERROR_MESSAGE_THRESHOLD = 1000;
+
 /**
  * エラーオブジェクトをユーザー表示用の日本語メッセージに変換する関数
  * 様々な種類のエラー（AI SDK、ツール実行、一般的なエラーなど）を
@@ -73,23 +76,27 @@ export const convertToolName = (toolName: string): string => {
  * @returns ユーザー表示用の日本語エラーメッセージ
  */
 export const converErrorMessage = (error: unknown): string => {
-	if (TypeValidationError.isInstance(error)) {
-		return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
-	}
+	const message = ((): string => {
+		if (TypeValidationError.isInstance(error)) {
+			return `型検証エラーが発生しました: VALUE: ${error.value} MESSAGE: ${error.message}`;
+		}
 
-	if (APICallError.isInstance(error)) {
-		return "API呼び出し中にエラーが発生しました";
-	}
+		if (APICallError.isInstance(error)) {
+			return "API呼び出し中にエラーが発生しました";
+		}
 
-	if (RetryError.isInstance(error)) {
-		return `リトライエラーが発生しました: ${error.message}`;
-	}
+		if (RetryError.isInstance(error)) {
+			return `リトライエラーが発生しました: ${error.message}`;
+		}
 
-	if (error instanceof Error) {
-		return `エラーが発生しました: ${error.message}`;
-	}
+		if (error instanceof Error) {
+			return `エラーが発生しました: ${error.message}`;
+		}
 
-	return `エラーが発生しました: ${String(error)}`;
+		return `エラーが発生しました: ${String(error)}`;
+	})();
+
+	return snip(message, ERROR_MESSAGE_THRESHOLD);
 };
 
 /**
