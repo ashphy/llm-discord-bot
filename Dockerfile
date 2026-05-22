@@ -3,7 +3,7 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY . /app
 
-RUN npm install
+RUN npm install --ignore-scripts
 RUN npm run build
 
 FROM node:22-bookworm-slim AS app
