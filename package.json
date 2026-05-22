@@ -12,7 +12,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"check-types": "tsc --noEmit",
-		"lint": "biome check"
+		"lint": "biome check",
+		"prepare": "lefthook install"
 	},
 	"keywords": ["LLM", "Discord"],
 	"author": "Kazuki Hamasaki",
@@ -48,6 +49,7 @@
 		"@biomejs/biome": "1.9.4",
 		"@dotenvx/dotenvx": "^1.21.1",
 		"@types/node": "^22.8.6",
+		"lefthook": "^2.1.8",
 		"mastra": "^0.18.8",
 		"tsx": "^4.19.2",
 		"typescript": "^5.6.3",
