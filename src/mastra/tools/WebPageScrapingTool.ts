@@ -1,4 +1,4 @@
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import FireCrawlApp, { FirecrawlError } from "@mendable/firecrawl-js";
 import { z } from "zod";
 import { env } from "../../env.js";
@@ -79,13 +79,13 @@ export const WebPageScrapingTool = createTool({
 	inputSchema: z.object({
 		url: z.string().url().describe("The URL of the web page to scrape."),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ url }) => {
 		const app = new FireCrawlApp({
 			apiKey: env.FIRECRAWL_API_KEY,
 		});
 
 		try {
-			const scrapeResult = await app.scrapeUrl(context.url, {
+			const scrapeResult = await app.scrapeUrl(url, {
 				formats: ["markdown"],
 				onlyMainContent: true,
 			});

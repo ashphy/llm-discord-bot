@@ -14,27 +14,23 @@ import { WebResearchTool } from "../tools/WebResearchTool.js";
 import { YouTubeAnalysisTool } from "../tools/YouTubeAnalysisTool.js";
 
 export const discordAgent = new Agent({
-	defaultStreamOptions: {
-		toolCallStreaming: true,
-	},
+	id: "discord-agent",
 	name: "Discord Agent",
-	instructions: async ({ runtimeContext }) => {
-		const userId = runtimeContext.get("userId") as string;
+	instructions: async ({ requestContext }) => {
+		const userId = requestContext.get("userId") as string;
 		const workingMemory = await readWorkingMemory(userId);
 		return SYSTEM_PROMPT_GAL(workingMemory?.memory);
 	},
 	model: anthropic("claude-sonnet-5"),
 	memory: new Memory({
 		storage: new LibSQLStore({
+			id: "discord-agent-memory",
 			url: ":memory:",
 		}),
-		embedder: undefined,
 		options: {
 			semanticRecall: false,
 			lastMessages: 10,
-			threads: {
-				generateTitle: false,
-			},
+			generateTitle: false,
 		},
 	}),
 	tools: {
@@ -46,6 +42,6 @@ export const discordAgent = new Agent({
 		DeepThinkTool,
 		YouTubeAnalysisTool,
 		UpdateWorkingMemoryTool,
-		...(await mcp.getTools()),
+		...(await mcp.listTools()),
 	},
 });

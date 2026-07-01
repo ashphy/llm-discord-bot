@@ -1,5 +1,5 @@
 import { type GoogleGenerativeAIProviderOptions, google } from "@ai-sdk/google";
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import { generateText } from "ai";
 import { z } from "zod";
 
@@ -15,7 +15,7 @@ Use this tool to answer questions that require current or factual data from the 
 				"A clear and specific question or topic to research using up-to-date web information. For best results, provide as much detail as possible.",
 			),
 	}),
-	execute: async ({ context: { question } }) => {
+	execute: async ({ question }) => {
 		const { text, sources } = await generateText({
 			model: google("gemini-3.5-flash"),
 			prompt: question,

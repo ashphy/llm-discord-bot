@@ -1,4 +1,4 @@
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import * as mathjs from "mathjs";
 import { z } from "zod";
 
@@ -24,9 +24,9 @@ export const MathTool = createTool({
 				"A mathematical expression in math.js syntax. Supports arithmetic, logical, bitwise, relational, matrix, unit, string, array, object, and function operations. Supports constants (pi, e, i), variables, assignment, comments (#), implicit multiplication, multi-line/statement, and unit conversion. Examples: 2+3*4, sin(pi/4), 2 inch to cm, [1,2;3,4]*2, a=5; a^2, 2+3i, f(x)=x^2; f(3), [1,2,3][2], {a:2+1, b:4}",
 			),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ expression }) => {
 		try {
-			return mathjs.evaluate(context.expression);
+			return mathjs.evaluate(expression);
 		} catch (error) {
 			if (error instanceof Error) {
 				return `Error evaluating expression: ${error.message}`;

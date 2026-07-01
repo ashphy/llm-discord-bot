@@ -3,12 +3,7 @@ import { MathTool } from "./MathTool.js";
 
 const evaluate = async (expression: string) => {
 	// biome-ignore lint/style/noNonNullAssertion: execute is defined for this tool
-	return MathTool.execute!({
-		context: { expression },
-		runtimeContext: {} as never,
-		resourceId: "",
-		threadId: "",
-	});
+	return MathTool.execute!({ expression }, {} as never);
 };
 
 describe("MathTool", () => {

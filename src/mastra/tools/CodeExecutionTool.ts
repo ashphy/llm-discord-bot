@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
 import { env } from "../../env.js";
@@ -17,11 +17,11 @@ export const CodeExecutionTool = createTool({
 				Note: When the user requests the use of a specific library or framework, use context7 for documentation.`,
 		),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ specification }) => {
 		const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
 		const response = await ai.models.generateContent({
 			model: "gemini-3.1-pro-preview",
-			contents: [context.specification],
+			contents: [specification],
 			config: {
 				tools: [{ codeExecution: {} }],
 			},

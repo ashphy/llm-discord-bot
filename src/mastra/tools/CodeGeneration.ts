@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
-import { createTool } from "@mastra/core";
-import { generateObject } from "ai";
+import { createTool } from "@mastra/core/tools";
+import { Output, generateText } from "ai";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
 
@@ -27,11 +27,11 @@ export const CodeGenerationTool = createTool({
 			),
 	}),
 	outputSchema: OutputSchema,
-	execute: async ({ context }) => {
+	execute: async ({ specification }) => {
 		try {
-			const { object } = await generateObject({
+			const result = await generateText({
 				model: openai("gpt-5.2"),
-				system: dedent`You are **CodeGen**, a concise code generation agent for Discord environments.
+				instructions: dedent`You are **CodeGen**, a concise code generation agent for Discord environments.
 
 **Core Principles:**
 1. **Essential Code Only**: Provide minimal, functional code without unnecessary boilerplate
@@ -52,12 +52,15 @@ Return a JSON object with:
 - When using specific libraries/frameworks, reference context7 for documentation
 
 Return only the JSON object.`,
-				prompt: context.specification,
-				schema: OutputSchema,
+				prompt: specification,
+				output: Output.object({ schema: OutputSchema }),
 				temperature: 1,
 			});
 
-			return object;
+			if (!result.output) {
+				throw new Error("Code generation returned no output");
+			}
+			return result.output;
 		} catch (error) {
 			throw new Error(
 				`Code generation failed: ${error instanceof Error ? error.message : String(error)}`,

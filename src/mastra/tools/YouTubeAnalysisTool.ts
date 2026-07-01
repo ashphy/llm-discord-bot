@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
 import { env } from "../../env.js";
@@ -23,16 +23,16 @@ export const YouTubeAnalysisTool = createTool({
 				"Specific instructions or questions about what to analyze in the YouTube video. For example, 'Summarize the video' or 'What are the key topics discussed?'",
 			),
 	}),
-	execute: async ({ context }) => {
+	execute: async ({ videoUrl, userRequest }) => {
 		try {
 			const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
 			const response = await ai.models.generateContent({
 				model: "gemini-3.5-flash",
 				contents: [
-					context.userRequest,
+					userRequest,
 					{
 						fileData: {
-							fileUri: context.videoUrl,
+							fileUri: videoUrl,
 						},
 					},
 				],

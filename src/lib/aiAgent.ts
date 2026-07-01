@@ -1,5 +1,4 @@
-import { run } from "node:test";
-import { RuntimeContext } from "@mastra/core/runtime-context";
+import { RequestContext } from "@mastra/core/di";
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
@@ -50,19 +49,23 @@ export class AiAgent {
 			);
 		}
 
-		const runtimeContext = new RuntimeContext<LLMBotRuntimeContext>();
-		runtimeContext.set("userId", userId);
+		const requestContext = new RequestContext<LLMBotRuntimeContext>();
+		requestContext.set("userId", userId);
 
 		const agent = mastra.getAgent("discordAgent");
-		const stream = await agent.stream(this.conversation.messages, {
-			maxSteps: 30,
-			runtimeContext,
-			onFinish: (result) => {
-				if (result.response.messages) {
-					this.conversation.messages.push(...result.response.messages);
-				}
+		const messages = this.conversation.messages;
+		const stream = await agent.stream(
+			messages as Parameters<typeof agent.stream>[0],
+			{
+				maxSteps: 30,
+				requestContext,
+				onFinish: (result: { response: { messages?: typeof messages } }) => {
+					if (result.response.messages) {
+						messages.push(...result.response.messages);
+					}
+				},
 			},
-		});
+		);
 
 		let text = "";
 		for await (const chunk of stream.fullStream) {

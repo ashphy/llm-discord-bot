@@ -1,4 +1,4 @@
-import { createTool } from "@mastra/core";
+import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { saveWorkingMemory } from "../../db/workingMemory.js";
 
@@ -10,11 +10,11 @@ export const UpdateWorkingMemoryTool = createTool({
 			.string()
 			.describe("The Markdown-formatted working memory content to store"),
 	}),
-	execute: async ({ context, runtimeContext }) => {
-		const userId = runtimeContext.get("userId") as string;
+	execute: async ({ memory }, { requestContext }) => {
+		const userId = requestContext?.get("userId") as string;
 
 		try {
-			saveWorkingMemory(userId, { memory: context.memory });
+			saveWorkingMemory(userId, { memory });
 
 			return { success: true };
 		} catch (error) {

@@ -7,13 +7,11 @@ import { discordAgent } from "./agents/diacordAgent.js";
 export const mastra = new Mastra({
 	agents: { discordAgent },
 	storage: new LibSQLStore({
+		id: "mastra-storage",
 		url: ":memory:",
 	}),
 	logger: new ConsoleLogger({
 		name: "Mastra",
 		level: "info",
 	}),
-	telemetry: {
-		enabled: false,
-	},
 });
