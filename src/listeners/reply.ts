@@ -1,5 +1,5 @@
 import { Listener } from "@sapphire/framework";
-import { type Message, TextChannel } from "discord.js";
+import { AttachmentBuilder, type Message, TextChannel } from "discord.js";
 import { AiAgent } from "../lib/aiAgent.js";
 import { storeImageAttachments } from "../lib/discordImages.js";
 import { useReplyMessage } from "../lib/useReplyMessage.js";
@@ -104,6 +104,17 @@ export class MessageReplyListener extends Listener {
 						await updateReplyMessage({
 							type: "error",
 							error: error,
+						});
+					},
+					onImage: async (image) => {
+						// 生成画像はストリーミング中のメッセージを編集し直すと毎回再アップロード
+						// になるため、独立したメッセージとして送る
+						await message.reply({
+							files: [
+								new AttachmentBuilder(Buffer.from(image.data), {
+									name: image.fileName,
+								}),
+							],
 						});
 					},
 					onFinish: async () => {

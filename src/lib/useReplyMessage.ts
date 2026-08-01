@@ -64,6 +64,7 @@ export const convertToolName = (toolName: string): string => {
 		CodeGenerationTool: "Code Generation (gpt-5.2)",
 		DeepThinkTool: "Deep Think (gemini-3.1-pro-preview)",
 		YouTubeAnalysisTool: "YouTube Analysis (gemini-3.5-flash)",
+		ImageGenerationTool: "Image Generation (gpt-image-2)",
 	};
 
 	if (toolName in mapping) {

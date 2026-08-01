@@ -8,6 +8,7 @@ import { mcp } from "../mcp-servers/context7.js";
 import { CodeExecutionTool } from "../tools/CodeExecutionTool.js";
 import { CodeGenerationTool } from "../tools/CodeGeneration.js";
 import { DeepThinkTool } from "../tools/DeepThinkTool.js";
+import { ImageGenerationTool } from "../tools/ImageGenerationTool.js";
 import { UpdateWorkingMemoryTool } from "../tools/UpdateWorkingMemoryTool.js";
 import { WebPageScrapingTool } from "../tools/WebPageScrapingTool.js";
 import { WebResearchTool } from "../tools/WebResearchTool.js";
@@ -41,6 +42,7 @@ export const discordAgent = new Agent({
 		CodeGenerationTool,
 		DeepThinkTool,
 		YouTubeAnalysisTool,
+		ImageGenerationTool,
 		UpdateWorkingMemoryTool,
 		...(await mcp.listTools()),
 	},
