@@ -77,7 +77,7 @@ export const WebPageScrapingTool = createTool({
 	id: "Web Page Scraping",
 	description: "Scrape a web page for specific information.",
 	inputSchema: z.object({
-		url: z.string().url().describe("The URL of the web page to scrape."),
+		url: z.url().describe("The URL of the web page to scrape."),
 	}),
 	execute: async ({ url }) => {
 		const app = new FireCrawlApp({

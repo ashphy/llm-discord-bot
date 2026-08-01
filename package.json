@@ -39,7 +39,7 @@
 		"mathjs": "^14.4.0",
 		"openai": "^5.10.2",
 		"ts-dedent": "^2.2.0",
-		"zod": "^3.24.4"
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",

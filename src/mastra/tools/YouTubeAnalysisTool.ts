@@ -13,10 +13,7 @@ export const YouTubeAnalysisTool = createTool({
 		Provide the YouTube video URL and a clear description of what you want to analyze or extract.
 	`),
 	inputSchema: z.object({
-		videoUrl: z
-			.string()
-			.url()
-			.describe("The URL of the YouTube video to be analyzed."),
+		videoUrl: z.url().describe("The URL of the YouTube video to be analyzed."),
 		userRequest: z
 			.string()
 			.describe(
