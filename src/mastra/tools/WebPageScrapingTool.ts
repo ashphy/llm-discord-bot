@@ -1,5 +1,5 @@
 import { createTool } from "@mastra/core/tools";
-import FireCrawlApp, { FirecrawlError } from "@mendable/firecrawl-js";
+import Firecrawl, { SdkError } from "@mendable/firecrawl-js";
 import { z } from "zod";
 import { env } from "../../env.js";
 
@@ -80,39 +80,29 @@ export const WebPageScrapingTool = createTool({
 		url: z.url().describe("The URL of the web page to scrape."),
 	}),
 	execute: async ({ url }) => {
-		const app = new FireCrawlApp({
+		const app = new Firecrawl({
 			apiKey: env.FIRECRAWL_API_KEY,
 		});
 
 		try {
-			const scrapeResult = await app.scrapeUrl(url, {
+			const document = await app.scrape(url, {
 				formats: ["markdown"],
 				onlyMainContent: true,
 			});
 
-			if (scrapeResult.success) {
-				const { title, markdown } = scrapeResult;
-				return {
-					title: title,
-					content: markdown,
-				};
-			}
-
 			return {
-				error: {
-					code: "UNKNOWN" satisfies ErrorCode,
-					message: "スクレイピングに失敗しました（理由不明）。",
-					statusCode: 0,
-				},
+				title: document.metadata?.title,
+				content: document.markdown,
 			};
 		} catch (error) {
-			if (error instanceof FirecrawlError) {
-				const { code, message } = mapStatusCode(error.statusCode);
+			if (error instanceof SdkError) {
+				const statusCode = error.status ?? 0;
+				const { code, message } = mapStatusCode(statusCode);
 				return {
 					error: {
 						code,
 						message,
-						statusCode: error.statusCode,
+						statusCode,
 					},
 				};
 			}
