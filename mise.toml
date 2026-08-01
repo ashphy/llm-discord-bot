@@ -1,4 +1,5 @@
 [tools]
-node = "26.5.1"
+# 実行イメージの gcr.io/distroless/nodejs26-debian13 が同梱する Node に合わせている
+node = "26.5.0"
 hadolint = "2.15.1"
 trivy = "0.72.0"

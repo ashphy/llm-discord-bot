@@ -1,4 +1,5 @@
-FROM node:26.5.1-bookworm-slim AS builder
+# ベース OS は実行イメージの distroless (debian13) に合わせて trixie で統一する
+FROM node:26.5.0-trixie-slim AS builder
 
 WORKDIR /app
 
@@ -11,14 +12,16 @@ COPY src ./src
 RUN npm run build
 
 # 本番イメージに devDependencies を持ち込まないため、実行用の依存を別に用意する
-FROM node:26.5.1-bookworm-slim AS deps
+FROM node:26.5.0-trixie-slim AS deps
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
-FROM node:26.5.1-bookworm-slim AS app
+# distroless はシェルもパッケージマネージャも持たないため攻撃面が小さい。
+# タグは更新で中身の Node が変わるので、Node 26.5.0 を含む digest で固定する
+FROM gcr.io/distroless/nodejs26-debian13:nonroot@sha256:d440510c9ef4ff874b240bb6b855e4de4e797db283e41d8d506da5085a677f26 AS app
 
 WORKDIR /app
 
@@ -27,7 +30,7 @@ COPY --from=builder /app/dist dist
 # ESM として解決させるために "type": "module" が要る
 COPY package.json package.json
 
-USER node
-# npm を挟むと SIGTERM がプロセスまで伝播しないため node を直接起動する。
+USER nonroot
+# ENTRYPOINT が node なので、渡すのはスクリプトのパスだけでよい。
 # .env はイメージに含めず環境変数は Fly.io から注入されるので dotenvx は通さない
-CMD ["node", "dist/server.js"]
+CMD ["dist/server.js"]
