@@ -38,7 +38,7 @@
 		"discord.js": "^14.27.0",
 		"mathjs": "^15.2.0",
 		"openai": "^7.3.0",
-		"ts-dedent": "^2.2.0",
+		"ts-dedent": "^2.3.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
