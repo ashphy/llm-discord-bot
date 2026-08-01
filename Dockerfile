@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS builder
+FROM node:26.5.1-bookworm-slim AS builder
 
 WORKDIR /app
 COPY . /app
@@ -6,7 +6,7 @@ COPY . /app
 RUN npm install --ignore-scripts
 RUN npm run build
 
-FROM node:22-bookworm-slim AS app
+FROM node:26.5.1-bookworm-slim AS app
 
 WORKDIR /app
 
