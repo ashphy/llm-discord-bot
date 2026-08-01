@@ -59,9 +59,11 @@ export class AiAgent {
 			{
 				maxSteps: 30,
 				requestContext,
-				onFinish: (result: { response: { messages?: typeof messages } }) => {
-					if (result.response.messages) {
-						messages.push(...result.response.messages);
+				onFinish: ({ response }) => {
+					// Mastra が返すのは ai-sdk 内部の ResponseMessage 型で、
+					// 構造は ModelMessage と互換だが型としては別物のため変換する
+					if (response.messages) {
+						messages.push(...(response.messages as typeof messages));
 					}
 				},
 			},
