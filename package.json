@@ -25,7 +25,7 @@
 		"@ai-sdk/openai": "^4.0.27",
 		"@aws-sdk/client-dynamodb": "^3.1101.0",
 		"@aws-sdk/lib-dynamodb": "^3.1101.0",
-		"@formkit/tempo": "^0.1.2",
+		"@formkit/tempo": "^1.1.0",
 		"@google/genai": "^2.15.0",
 		"@mastra/core": "^1.55.0",
 		"@mastra/libsql": "^1.18.0",
