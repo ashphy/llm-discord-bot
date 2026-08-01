@@ -299,6 +299,8 @@ export function useReplyMessage(
 					case "error": {
 						return convertErrorMessage(part.error);
 					}
+					default:
+						return undefined;
 				}
 			})
 			.filter((line) => line !== undefined)

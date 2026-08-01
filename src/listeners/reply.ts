@@ -38,8 +38,6 @@ export class MessageReplyListener extends Listener {
 
 		const userMessage = message.content;
 
-		let messageId = "";
-
 		if (message.channel instanceof TextChannel) {
 			await message.channel.sendTyping();
 		}
@@ -59,9 +57,7 @@ export class MessageReplyListener extends Listener {
 					onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
 						if (!currentMessage)
 							throw new Error("Current message is undefined");
-						const message = await currentMessage?.reply(messageOptions);
-						messageId = message.id;
-						return message;
+						return await currentMessage?.reply(messageOptions);
 					},
 					onTyping: async () => {
 						if (message.channel instanceof TextChannel) {

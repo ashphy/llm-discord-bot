@@ -1,4 +1,4 @@
-import { APICallError, TypeValidationError } from "ai";
+import { APICallError } from "ai";
 import { describe, expect, it } from "vitest";
 import {
 	convertErrorMessage,

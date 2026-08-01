@@ -1,6 +1,7 @@
 import type { ModelMessage } from "ai";
 import OpenAI from "openai";
 import { env } from "../env.js";
+
 const openai = new OpenAI({
 	apiKey: env.OPENAI_API_KEY,
 });
@@ -17,22 +18,14 @@ export const extractTextFromMessages = (messages: ModelMessage[]): string[] => {
 					}
 
 					return msg.content
-						.map((part) => {
-							if (part.type === "text") {
-								return part.text;
-							}
-						})
+						.flatMap((part) => (part.type === "text" ? [part.text] : []))
 						.join("\n");
 				case "assistant":
 					if (typeof msg.content === "string") {
 						return msg.content;
 					}
 					return msg.content
-						.map((part) => {
-							if (part.type === "text") {
-								return part.text;
-							}
-						})
+						.flatMap((part) => (part.type === "text" ? [part.text] : []))
 						.join("\n");
 				default:
 					return undefined;

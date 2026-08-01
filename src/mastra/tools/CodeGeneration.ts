@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { createTool } from "@mastra/core/tools";
-import { Output, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
 
