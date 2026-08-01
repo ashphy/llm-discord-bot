@@ -40,6 +40,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **DynamoDB**: Conversation persistence using AWS SDK
 - **Read/Write**: `src/db/readConversations.ts` and `src/db/saveConversation.ts`
 - **Memory Storage**: In-memory LibSQLStore for Mastra agent memory
+- **S3**: Attached images (`src/db/s3.ts`). Discord CDN URLs expire in ~24h, so image bytes are copied to S3 and the conversation stores only an `s3://<key>` reference
+
+#### Image Input
+- **Slash command**: `image` / `image2` / `image3` / `image4` attachment options on `/llm`
+- **Reply**: images attached to a reply message are picked up automatically
+- **`src/lib/discordImages.ts`**: validates attachments (JPEG/PNG/GIF/WebP, 5MB, 4 images max) and uploads them to S3
+- **`src/lib/imageStore.ts`**: S3 upload/download plus `hydrateImageParts()`, which swaps `s3://` references for the actual bytes right before the request is sent to the LLM. Expired images are replaced with a text placeholder
 
 #### Conversation Flow
 1. User sends `/llm` command or replies to bot message
@@ -60,6 +67,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `ANTHROPIC_API_KEY` - Anthropic Claude access
 - `PERPLEXITY_API_KEY` - Perplexity API access
 - `FIRECRAWL_API_KEY` - Web scraping service access
+- `IMAGE_BUCKET_NAME` - S3 bucket for attached images (needs a 30-day lifecycle rule on the `images/` prefix)
 
 ## Key Development Notes
 - Uses ES modules (`"type": "module"` in package.json)

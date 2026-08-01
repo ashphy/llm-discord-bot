@@ -12,6 +12,10 @@ export const env = createEnv({
 		ANTHROPIC_API_KEY: z.string(),
 		PERPLEXITY_API_KEY: z.string(),
 		FIRECRAWL_API_KEY: z.string(),
+
+		// 添付画像を保存するS3バケット名
+		// バケットには30日で失効するライフサイクルルールを設定しておくこと
+		IMAGE_BUCKET_NAME: z.string(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

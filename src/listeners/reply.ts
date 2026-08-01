@@ -1,6 +1,7 @@
 import { Listener } from "@sapphire/framework";
 import { type Message, TextChannel } from "discord.js";
 import { AiAgent } from "../lib/aiAgent.js";
+import { storeImageAttachments } from "../lib/discordImages.js";
 import { useReplyMessage } from "../lib/useReplyMessage.js";
 
 export class MessageReplyListener extends Listener {
@@ -42,6 +43,12 @@ export class MessageReplyListener extends Listener {
 			await message.channel.sendTyping();
 		}
 
+		// 添付画像をS3に保存する
+		const { images, rejected } = await storeImageAttachments(
+			[...message.attachments.values()],
+			userId,
+		);
+
 		// ここで返信メッセージに対して反応する処理を記述
 		const { updateReplyMessage, getFirstMessageId, finishMessage } =
 			useReplyMessage(
@@ -71,33 +78,43 @@ export class MessageReplyListener extends Listener {
 		await aiAgent.load(referenceMessageId);
 
 		try {
-			await aiAgent.thinkAnswer(userMessage, userId, userName, {
-				onStepStart: async () => {},
-				onTextMessage: async (text) => {
-					await updateReplyMessage({
-						type: "text",
-						text,
-					});
+			for (const reason of rejected) {
+				await updateReplyMessage({ type: "notice", text: reason });
+			}
+
+			await aiAgent.thinkAnswer(
+				userMessage,
+				userId,
+				userName,
+				{
+					onStepStart: async () => {},
+					onTextMessage: async (text) => {
+						await updateReplyMessage({
+							type: "text",
+							text,
+						});
+					},
+					onToolCall: async (toolName) => {
+						await updateReplyMessage({
+							type: "tool-call",
+							toolName,
+						});
+					},
+					onError: async (error) => {
+						await updateReplyMessage({
+							type: "error",
+							error: error,
+						});
+					},
+					onFinish: async () => {
+						const id = getFirstMessageId();
+						if (id) {
+							await aiAgent.save(id);
+						}
+					},
 				},
-				onToolCall: async (toolName) => {
-					await updateReplyMessage({
-						type: "tool-call",
-						toolName,
-					});
-				},
-				onError: async (error) => {
-					await updateReplyMessage({
-						type: "error",
-						error: error,
-					});
-				},
-				onFinish: async () => {
-					const id = getFirstMessageId();
-					if (id) {
-						await aiAgent.save(id);
-					}
-				},
-			});
+				images,
+			);
 		} catch (error) {
 			console.error("Error in Reply Command:", error);
 			if (error instanceof Error) {

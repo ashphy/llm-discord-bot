@@ -21,7 +21,12 @@ import { snip } from "../utils/snip.js";
  */
 
 /** ユーザーからのプロンプト（質問・指示）を表すパート */
-type ReplyPromptPart = { type: "prompt"; prompt: string };
+type ReplyPromptPart = {
+	type: "prompt";
+	prompt: string;
+	/** 添付された画像の枚数（0のときは表示しない） */
+	imageCount?: number;
+};
 
 /** AIからのテキスト応答を表すパート */
 type ReplyTextPart = { type: "text"; text: string };
@@ -32,12 +37,16 @@ type ReplyToolCallPart = { type: "tool-call"; toolName: string };
 /** エラーが発生したことを表すパート */
 type ReplyErrorPart = { type: "error"; error: unknown };
 
+/** 処理は継続するがユーザーに伝えたい注意事項を表すパート */
+type ReplyNoticePart = { type: "notice"; text: string };
+
 /** 返信メッセージのパートを表現するユニオン型 */
 export type ReplyPart =
 	| ReplyPromptPart
 	| ReplyTextPart
 	| ReplyToolCallPart
-	| ReplyErrorPart;
+	| ReplyErrorPart
+	| ReplyNoticePart;
 
 /**
  * ツール名をユーザー表示用の日本語名に変換する関数
@@ -265,6 +274,7 @@ export function useReplyMessage(
 	 * - prompt: "> プロンプト内容" (引用形式、100文字で切り詰め)
 	 * - text: そのまま表示（長いコードブロックは添付ファイル化）
 	 * - tool-call: "-# ▷ ツール名" (Discord注釈形式)
+	 * - notice: "-# ⚠️ 注意事項" (Discord注釈形式)
 	 * - error: 日本語エラーメッセージ
 	 *
 	 * @returns Discord表示用のテキストと添付ファイル配列
@@ -284,6 +294,9 @@ export function useReplyMessage(
 							.split(/\r\n|\n|\r/)
 							.slice(0, 3);
 						const quotedLines = lines.map((line) => `> ${line}`);
+						if (part.imageCount && part.imageCount > 0) {
+							quotedLines.push(`> 📎 画像 ${part.imageCount}枚`);
+						}
 						return quotedLines.join("\n");
 					}
 					case "text": {
@@ -296,6 +309,8 @@ export function useReplyMessage(
 					}
 					case "tool-call":
 						return `-# ▷ ${convertToolName(part.toolName)}`;
+					case "notice":
+						return `-# ⚠️ ${part.text}`;
 					case "error": {
 						return convertErrorMessage(part.error);
 					}

@@ -3,6 +3,8 @@ import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
 import type { Conversation } from "./conversation.js";
+import type { StoredImagePart } from "./discordImages.js";
+import { hydrateImageParts } from "./imageStore.js";
 import { moderate } from "./moderation.js";
 
 type LLMBotRuntimeContext = {
@@ -22,6 +24,7 @@ export class AiAgent {
 	 * ユーザーのメッセージに対して返答を生成します
 	 * @param username
 	 * @param userMesage
+	 * @param images 添付画像（S3への参照を持つパート）
 	 * @returns
 	 */
 	async thinkAnswer(
@@ -35,11 +38,17 @@ export class AiAgent {
 			onFinish?: () => Promise<void>;
 			onStepStart?: () => Promise<void>;
 		} = {},
+		images: StoredImagePart[] = [],
 	) {
+		const promptText = `<username>${username}</username>
+<userMessage>${userMesage}</userMessage>`;
+
 		this.conversation.messages.push({
 			role: "user",
-			content: `<username>${username}</username>
-<userMessage>${userMesage}</userMessage>`,
+			content:
+				images.length > 0
+					? [{ type: "text", text: promptText }, ...images]
+					: promptText,
 		});
 
 		const isModerationFlagged = await moderate(this.conversation.messages);
@@ -54,8 +63,12 @@ export class AiAgent {
 
 		const agent = mastra.getAgent("discordAgent");
 		const messages = this.conversation.messages;
+
+		// 会話履歴にはS3への参照だけを保持しているため、送信直前に実体へ差し替える
+		const hydratedMessages = await hydrateImageParts(messages);
+
 		const stream = await agent.stream(
-			messages as Parameters<typeof agent.stream>[0],
+			hydratedMessages as Parameters<typeof agent.stream>[0],
 			{
 				maxSteps: 30,
 				requestContext,
