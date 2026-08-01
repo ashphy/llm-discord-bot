@@ -1,2 +1,4 @@
 [tools]
 node = "26.5.1"
+hadolint = "2.15.1"
+trivy = "0.72.0"

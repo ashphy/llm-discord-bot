@@ -1,0 +1,5 @@
+# DS-0026: Add HEALTHCHECK instruction in your Dockerfile
+# この Bot は HTTP サーバーを持たず Discord Gateway に常駐するだけなので、
+# コンテナ内から叩けるヘルスチェック用のエンドポイントが存在しない。
+# プロセスの死活監視は Fly.io のマシン管理に任せる。
+DS-0026

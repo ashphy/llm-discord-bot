@@ -1,0 +1,6 @@
+ignored:
+  # DL3066: Non-numeric user-id may not be resolvable by host system
+  # node 公式イメージが標準で用意している node ユーザー (uid 1000) を指定している。
+  # イメージ内では必ず解決でき、ホスト側との uid マッピングが問題になる
+  # bind mount も使っていないため、意図が読み取りやすい名前指定のままとする。
+  - DL3066

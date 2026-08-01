@@ -1,10 +1,18 @@
 # https://lefthook.dev/configuration/
+#
+# git hook は非対話シェルで起動されるため mise の自動切り替えが効かない。
+# mise exec を挟まないと mise.toml で指定した Node が使われず、
+# hadolint / trivy に至っては PATH から解決できない。
 pre-commit:
   parallel: true
   jobs:
     - name: lint
-      run: npm run lint
+      run: mise exec -- npm run lint
     - name: types
-      run: npm run check-types
+      run: mise exec -- npm run check-types
     - name: test
-      run: npm test
+      run: mise exec -- npm test
+    - name: dockerfile
+      run: mise exec -- hadolint Dockerfile
+    - name: trivy
+      run: mise exec -- trivy config --exit-code 1 .
