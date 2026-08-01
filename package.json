@@ -33,7 +33,7 @@
 		"@mastra/memory": "^1.24.0",
 		"@mendable/firecrawl-js": "^1.24.0",
 		"@sapphire/framework": "^5.5.0",
-		"@t3-oss/env-core": "^0.11.1",
+		"@t3-oss/env-core": "^0.13.11",
 		"ai": "^7.0.47",
 		"discord.js": "^14.27.0",
 		"mathjs": "^14.4.0",
