@@ -43,7 +43,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@dotenvx/dotenvx": "^1.21.1",
+		"@dotenvx/dotenvx": "^2.19.1",
 		"@types/node": "^22.8.6",
 		"lefthook": "^2.1.10",
 		"mastra": "^1.21.0",
