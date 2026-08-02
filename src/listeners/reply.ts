@@ -50,29 +50,32 @@ export class MessageReplyListener extends Listener {
 		);
 
 		// ここで返信メッセージに対して反応する処理を記述
-		const { updateReplyMessage, getFirstMessageId, finishMessage } =
-			useReplyMessage(
-				message,
-				[
-					{
-						type: "prompt",
-						prompt: userMessage,
-					},
-				],
-				true,
+		const {
+			updateReplyMessage,
+			registerMessageId,
+			getMessageIds,
+			finishMessage,
+		} = useReplyMessage(
+			message,
+			[
 				{
-					onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
-						if (!currentMessage)
-							throw new Error("Current message is undefined");
-						return await currentMessage?.reply(messageOptions);
-					},
-					onTyping: async () => {
-						if (message.channel instanceof TextChannel) {
-							await message.channel.sendTyping();
-						}
-					},
+					type: "prompt",
+					prompt: userMessage,
 				},
-			);
+			],
+			true,
+			{
+				onNewMessage: async (_isFirst, currentMessage, messageOptions) => {
+					if (!currentMessage) throw new Error("Current message is undefined");
+					return await currentMessage?.reply(messageOptions);
+				},
+				onTyping: async () => {
+					if (message.channel instanceof TextChannel) {
+						await message.channel.sendTyping();
+					}
+				},
+			},
+		);
 
 		const aiAgent = new AiAgent();
 		await aiAgent.load(referenceMessageId);
@@ -109,18 +112,20 @@ export class MessageReplyListener extends Listener {
 					onImage: async (image) => {
 						// 生成画像はストリーミング中のメッセージを編集し直すと毎回再アップロード
 						// になるため、独立したメッセージとして送る
-						await message.reply({
+						const sent = await message.reply({
 							files: [
 								new AttachmentBuilder(Buffer.from(image.data), {
 									name: image.fileName,
 								}),
 							],
 						});
+						// 画像メッセージへの返信からも会話を辿れるようにする
+						registerMessageId(sent.id);
 					},
 					onFinish: async () => {
-						const id = getFirstMessageId();
-						if (id) {
-							await aiAgent.save(id);
+						const [conversationId, ...aliasIds] = getMessageIds();
+						if (conversationId) {
+							await aiAgent.save(conversationId, aliasIds);
 						}
 					},
 				},

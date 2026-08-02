@@ -206,29 +206,24 @@ describe("extractLargeCodeBlocks", () => {
 /** 送信されたメッセージを集めながら useReplyMessage を実行するヘルパー */
 const sendParts = async (parts: ReplyPart[]) => {
 	const sent: { content: string; files?: AttachmentBuilder[] }[] = [];
-	const { updateReplyMessage, finishMessage } = useReplyMessage(
-		undefined,
-		[],
-		true,
-		{
-			onNewMessage: async (_isFirst, _currentMessage, messageOptions) => {
-				sent.push(messageOptions);
-				return {
-					id: "message-id",
-					edit: async (options: typeof messageOptions) => {
-						sent[sent.length - 1] = options;
-					},
-				} as unknown as Message<boolean>;
-			},
+	const reply = useReplyMessage(undefined, [], true, {
+		onNewMessage: async (_isFirst, _currentMessage, messageOptions) => {
+			const index = sent.push(messageOptions) - 1;
+			return {
+				id: `message-${index + 1}`,
+				edit: async (options: typeof messageOptions) => {
+					sent[index] = options;
+				},
+			} as unknown as Message<boolean>;
 		},
-	);
+	});
 
 	for (const part of parts) {
-		await updateReplyMessage(part);
+		await reply.updateReplyMessage(part);
 	}
-	finishMessage();
+	reply.finishMessage();
 
-	return sent;
+	return { sent, ...reply };
 };
 
 describe("useReplyMessage", () => {
@@ -239,7 +234,7 @@ describe("useReplyMessage", () => {
 			...Array.from({ length: 12 }, (_, i) => `| 行${i + 1} | ${i + 1} |`),
 		].join("\n");
 
-		const sent = await sendParts([{ type: "text", text: table }]);
+		const { sent } = await sendParts([{ type: "text", text: table }]);
 
 		expect(sent).toHaveLength(1);
 		expect(sent[0].content).toContain("項目 | 値");
@@ -254,7 +249,7 @@ describe("useReplyMessage", () => {
 		);
 		const text = `#### 見出し\n\n\`\`\`js\n${code}\n\`\`\`\n\n---\n\n終わり`;
 
-		const sent = await sendParts([{ type: "text", text }]);
+		const { sent } = await sendParts([{ type: "text", text }]);
 
 		expect(sent[0].files).toHaveLength(1);
 		// `_` はエスケープされるが、Discordはバックスラッシュを取り除いて描画する
@@ -264,7 +259,7 @@ describe("useReplyMessage", () => {
 	});
 
 	it("tool-callやnoticeのDiscord記法を壊さない", async () => {
-		const sent = await sendParts([
+		const { sent } = await sendParts([
 			{ type: "text", text: "本文です" },
 			{ type: "tool-call", toolName: "MathTool" },
 			{ type: "notice", text: "注意" },
@@ -273,5 +268,57 @@ describe("useReplyMessage", () => {
 		const content = sent[sent.length - 1].content;
 		expect(content).toContain("-# ▷ Math Tool");
 		expect(content).toContain("-# ⚠️ 注意");
+	});
+});
+
+describe("useReplyMessage - 会話履歴の検索キー", () => {
+	it("分割された全メッセージのIDを作成順に返す", async () => {
+		const { sent, getMessageIds } = await sendParts([
+			{ type: "text", text: "みじかい応答" },
+			{ type: "text", text: "あ".repeat(2500) },
+		]);
+
+		expect(sent.length).toBeGreaterThan(1);
+		expect(getMessageIds()).toEqual(
+			sent.map((_, index) => `message-${index + 1}`),
+		);
+	});
+
+	it("先頭は最初に作成したメッセージのID", async () => {
+		const { getMessageIds } = await sendParts([
+			{ type: "text", text: "みじかい応答" },
+			{ type: "text", text: "あ".repeat(2500) },
+		]);
+
+		expect(getMessageIds()[0]).toBe("message-1");
+	});
+
+	it("registerMessageIdで登録したIDも含める", async () => {
+		const { getMessageIds, registerMessageId } = await sendParts([
+			{ type: "text", text: "応答" },
+		]);
+
+		// 生成画像のように呼び出し側が独立して送るメッセージ
+		registerMessageId("image-message");
+
+		expect(getMessageIds()).toEqual(["message-1", "image-message"]);
+	});
+
+	it("同じIDを重複して登録しない", async () => {
+		const { getMessageIds, registerMessageId } = await sendParts([
+			{ type: "text", text: "応答" },
+		]);
+
+		registerMessageId("message-1");
+		registerMessageId("image-message");
+		registerMessageId("image-message");
+
+		expect(getMessageIds()).toEqual(["message-1", "image-message"]);
+	});
+
+	it("メッセージを作成していなければ空配列を返す", async () => {
+		const { getMessageIds } = await sendParts([]);
+
+		expect(getMessageIds()).toEqual([]);
 	});
 });

@@ -261,7 +261,21 @@ export function useReplyMessage(
 
 	let currentReplyIndex = 0;
 	let currentMessage: Message<boolean> | undefined;
-	let firstMessageId: string | undefined;
+	/** この応答で作成したメッセージのID（会話履歴の検索キーになる） */
+	const messageIds: string[] = [];
+
+	/**
+	 * 会話履歴の検索キーとしてメッセージIDを登録する関数
+	 * 分割されたメッセージだけでなく、呼び出し側が独立して送るメッセージ
+	 * （生成画像など）も登録しておかないと、そこへの返信で履歴を辿れなくなる。
+	 *
+	 * @param messageId 登録するメッセージのID
+	 */
+	const registerMessageId = (messageId: string): void => {
+		if (!messageIds.includes(messageId)) {
+			messageIds.push(messageId);
+		}
+	};
 
 	const typingTimerId = setInterval(async () => {
 		if (callbacks.onTyping) {
@@ -380,7 +394,7 @@ export function useReplyMessage(
 					);
 				}
 
-				firstMessageId = currentMessage?.id;
+				if (currentMessage) registerMessageId(currentMessage.id);
 			}
 		}
 
@@ -395,13 +409,13 @@ export function useReplyMessage(
 	};
 
 	/**
-	 * 最初に作成されたメッセージのIDを取得する関数
-	 * 会話の継続性を保つためにメッセージIDを保存する際に使用されます。
+	 * この応答で作成したメッセージのIDを作成順に取得する関数
+	 * 会話履歴はこれらすべてのIDから辿れるように保存する必要があります。
 	 *
-	 * @returns 最初のメッセージのID（存在しない場合はundefined）
+	 * @returns メッセージIDの配列（1件も作成していない場合は空配列）
 	 */
-	const getFirstMessageId = (): string | undefined => {
-		return firstMessageId;
+	const getMessageIds = (): string[] => {
+		return [...messageIds];
 	};
 
 	/**
@@ -409,8 +423,14 @@ export function useReplyMessage(
 	 *
 	 * @returns {Object} メッセージ管理インターフェース
 	 * @returns {Function} updateReplyMessage - 新しいメッセージパートを追加し更新
-	 * @returns {Function} write - タイピング表示開始（未実装）
-	 * @returns {Function} getFirstMessageId - 最初のメッセージID取得
+	 * @returns {Function} registerMessageId - 会話履歴の検索キーにメッセージIDを追加
+	 * @returns {Function} getMessageIds - 作成したメッセージIDの一覧を取得
+	 * @returns {Function} finishMessage - タイピング表示の停止
 	 */
-	return { updateReplyMessage, getFirstMessageId, finishMessage };
+	return {
+		updateReplyMessage,
+		registerMessageId,
+		getMessageIds,
+		finishMessage,
+	};
 }

@@ -39,6 +39,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #### Database & Storage
 - **DynamoDB**: Conversation persistence using AWS SDK
 - **Read/Write**: `src/db/readConversations.ts` and `src/db/saveConversation.ts`
+- The `Conversations` table is keyed by `MessageId` alone, but one reply can span several Discord messages and the user may reply to any of them. The conversation body is stored once under the first message id; every other id (later chunks, generated-image messages) gets a `{ ConversationRef }` alias item that `readConversation` follows one hop. Duplicating the body under each id would multiply write cost and hit the 400KB item limit that much sooner
+- `useReplyMessage` collects the ids it creates; callers add the ones they send themselves via `registerMessageId` and pass the whole list to `AiAgent.save`
 - **Memory Storage**: In-memory LibSQLStore for Mastra agent memory
 - **S3**: Attached images (`src/db/s3.ts`). Discord CDN URLs expire in ~24h, so image bytes are copied to S3 and the conversation stores only an `s3://<key>` reference
 

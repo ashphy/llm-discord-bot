@@ -59,33 +59,37 @@ export class LlmCommand extends Command {
 		);
 
 		// AIに問い合わせ
-		const { updateReplyMessage, getFirstMessageId, finishMessage } =
-			useReplyMessage(
-				undefined,
-				[
-					{
-						type: "prompt",
-						prompt,
-						imageCount: images.length,
-					},
-				],
-				false,
+		const {
+			updateReplyMessage,
+			registerMessageId,
+			getMessageIds,
+			finishMessage,
+		} = useReplyMessage(
+			undefined,
+			[
 				{
-					onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
-						if (isFirst) {
-							return await interaction.editReply(messageOptions);
-						}
-
-						return await interaction.followUp(messageOptions);
-					},
-					onTyping: async () => {
-						const channel = interaction.channel;
-						if (channel && "sendTyping" in channel) {
-							await channel.sendTyping();
-						}
-					},
+					type: "prompt",
+					prompt,
+					imageCount: images.length,
 				},
-			);
+			],
+			false,
+			{
+				onNewMessage: async (isFirst, _currentMessage, messageOptions) => {
+					if (isFirst) {
+						return await interaction.editReply(messageOptions);
+					}
+
+					return await interaction.followUp(messageOptions);
+				},
+				onTyping: async () => {
+					const channel = interaction.channel;
+					if (channel && "sendTyping" in channel) {
+						await channel.sendTyping();
+					}
+				},
+			},
+		);
 
 		try {
 			for (const reason of rejected) {
@@ -120,18 +124,20 @@ export class LlmCommand extends Command {
 					onImage: async (image) => {
 						// 生成画像はストリーミング中のメッセージを編集し直すと毎回再アップロード
 						// になるため、独立したメッセージとして送る
-						await interaction.followUp({
+						const sent = await interaction.followUp({
 							files: [
 								new AttachmentBuilder(Buffer.from(image.data), {
 									name: image.fileName,
 								}),
 							],
 						});
+						// 画像メッセージへの返信からも会話を辿れるようにする
+						registerMessageId(sent.id);
 					},
 					onFinish: async () => {
-						const id = getFirstMessageId();
-						if (id) {
-							await aiAgent.save(id);
+						const [conversationId, ...aliasIds] = getMessageIds();
+						if (conversationId) {
+							await aiAgent.save(conversationId, aliasIds);
 						}
 					},
 				},

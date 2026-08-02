@@ -156,10 +156,15 @@ export class AiAgent {
 
 	/**
 	 * 会話履歴をDBに保存します
-	 * @param messageId
+	 *
+	 * 応答が複数のメッセージに分かれた場合、どのメッセージへの返信からでも
+	 * 会話を辿れるように、作成したメッセージIDをすべて渡す必要があります。
+	 *
+	 * @param messageId 会話の実体を保存するメッセージID
+	 * @param aliasMessageIds 同じ会話を指させる他のメッセージID
 	 */
-	async save(messageId: string) {
+	async save(messageId: string, aliasMessageIds: string[] = []) {
 		// 会話履歴を保存
-		await saveConversation(messageId, this.conversation);
+		await saveConversation(messageId, this.conversation, aliasMessageIds);
 	}
 }
