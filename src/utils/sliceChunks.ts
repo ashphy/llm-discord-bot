@@ -50,8 +50,14 @@ export const sliceChunks = (message: string): string[] => {
 				current.length + separator.length + rest.length + reserved();
 			if (length <= MAX_MESSAGE_LENGTH) break;
 
-			// チャンクを変えれば収まるなら、行を割らずに次のメッセージへ送る
-			if (!isEmptyChunk()) {
+			// チャンクを変えれば収まるなら、行を割らずに次のメッセージへ送る。
+			// どのみち割るしかない行のときに送ってしまうと、現在のチャンクの
+			// 残りが丸ごと無駄になり、メッセージが1通余分に増える
+			const fence = openingFence ?? "";
+			const fitsInNewChunk =
+				fence.length + (fence === "" ? 0 : 1) + rest.length + reserved() <=
+				MAX_MESSAGE_LENGTH;
+			if (!isEmptyChunk() && fitsInNewChunk) {
 				startNewChunk();
 				continue;
 			}

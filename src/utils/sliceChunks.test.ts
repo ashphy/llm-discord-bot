@@ -58,6 +58,16 @@ describe("sliceChunks", () => {
 		]);
 	});
 
+	it("どのみち割る行のときは現在のチャンクを埋めてから割る", () => {
+		const text = `${"a".repeat(6)}\n${"b".repeat(2500)}`;
+		const result = sliceChunks(text);
+		// 先にチャンクを切り替えると、6文字のチャンクができて3通になる
+		expect(result).toHaveLength(2);
+		expect(result[0]).toHaveLength(2000);
+		expect(result[0].startsWith(`${"a".repeat(6)}\n`)).toBe(true);
+		expect(result[1]).toHaveLength(2500 - 1993);
+	});
+
 	it("コードブロックを跨ぐときはフェンスを閉じて開き直す", () => {
 		const lines = Array.from({ length: 60 }, (_, i) => `line ${i + 1};`);
 		const text = `\`\`\`js\n${lines.join("\n")}\n\`\`\``;
