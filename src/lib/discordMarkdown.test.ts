@@ -268,10 +268,16 @@ describe("toDiscordMarkdown - Discord固有記法の保護", () => {
 		).toBe("<@&12> <#34> <:name:56> <a:anim:78> <t:1700000000:R>");
 	});
 
-	it("下線として書かれた __ を太字に書き換えない", () => {
-		expect(toDiscordMarkdown("__下線__ と **太字**")).toBe(
-			"__下線__ と **太字**",
+	it("GFMの __ を ** に統一する", () => {
+		// Discordは `__` を下線として描画するため、そのまま出すと
+		// モデルの「太字のつもり」が下線になってしまう
+		expect(toDiscordMarkdown("__太字__ と **太字**")).toBe(
+			"**太字** と **太字**",
 		);
+	});
+
+	it("強調の _ も * に統一する", () => {
+		expect(toDiscordMarkdown("_斜体_ と *斜体*")).toBe("*斜体* と *斜体*");
 	});
 });
 

@@ -104,22 +104,6 @@ const paragraphOf = (children: PhrasingContent[]): Paragraph => ({
 
 const HANDLERS: ToMarkdownOptions["handlers"] = {
 	/**
-	 * GFM では `__text__` は太字だが Discord では下線を意味する。
-	 * 元のソースがどちらの記号だったかを保持して往復させることで、
-	 * 「太字のつもりが下線になる」「下線のつもりが太字になる」の両方を防ぐ。
-	 */
-	strong: (node, parent, state, info) => {
-		const options = state.options as { strong?: "*" | "_" };
-		const previous = options.strong;
-		options.strong = node.data?.discordUnderline === true ? "_" : "*";
-		try {
-			return defaultHandlers.strong(node, parent, state, info);
-		} finally {
-			options.strong = previous;
-		}
-	},
-
-	/**
 	 * 既定のハンドラは URL とリンクテキストが同じとき `<url>` を出すが、
 	 * Discord では山括弧が「埋め込みプレビューの抑制」を意味してしまう。
 	 * 裸の URL は裸のまま出してプレビューを保つ。
@@ -142,6 +126,10 @@ const HANDLERS: ToMarkdownOptions["handlers"] = {
  * 表・脚注・タスクリストは変換段階で別のノードへ置き換え済みのため、
  * gfm の拡張は取り消し線と自動リンクのみを読み込む。
  * 表の拡張を入れると `|` が常時エスケープされ、`||スポイラー||` が壊れる。
+ *
+ * 強調は記号を `*` に統一する。GFM の `__text__` は太字だが Discord では
+ * 下線を意味するため、そのまま出すとモデルの「太字のつもり」が下線になる。
+ * 代わりに下線は出力できなくなるが、システムプロンプトでも案内していない。
  */
 const SERIALIZE_OPTIONS: ToMarkdownOptions = {
 	extensions: [gfmStrikethroughToMarkdown(), gfmAutolinkLiteralToMarkdown()],
@@ -178,19 +166,6 @@ const collectContext = (tree: Root): ConvertContext => {
 	});
 
 	return { definitions, footnotes };
-};
-
-/**
- * ソース上で `__` が使われていた strong ノードに印を付ける関数
- * mdast は記号の種類を保持しないため、位置情報から元の文字を読み取る。
- */
-const markUnderlineStrong = (tree: Root, source: string): void => {
-	visit(tree, "strong", (node) => {
-		const offset = node.position?.start.offset;
-		if (offset !== undefined && source.charAt(offset) === "_") {
-			node.data = { ...node.data, discordUnderline: true };
-		}
-	});
 };
 
 /** 表のセルをプレーンテキストへ変換する関数 */
@@ -488,7 +463,6 @@ export const toDiscordMarkdown = (source: string): string => {
 	});
 
 	const context = collectContext(tree);
-	markUnderlineStrong(tree, source);
 	transformChildren(tree, context);
 	appendFootnotes(tree, context);
 
