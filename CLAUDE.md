@@ -64,6 +64,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **useReplyMessage**: `src/lib/useReplyMessage.ts` - Manages Discord message updates and chunking
 - **Conversation Types**: Defined in `src/lib/conversation.ts`
 - **System Prompts**: Located in `src/lib/systemPrompt.ts`
+- **sliceChunks**: `src/utils/sliceChunks.ts` - splits at line boundaries and closes/reopens code fences across the 2000 character limit, so a code block is never left unterminated
 
 ## Environment Variables Required
 - `BOT_TOKEN` - Discord bot token
