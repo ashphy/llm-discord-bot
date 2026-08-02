@@ -14,6 +14,7 @@ import { APICallError, RetryError, TypeValidationError } from "ai";
 import { AttachmentBuilder, type Message } from "discord.js";
 import { sliceChunks } from "../utils/sliceChunks.js";
 import { snip } from "../utils/snip.js";
+import { toDiscordMarkdown } from "./discordMarkdown.js";
 
 /**
  * 返信メッセージのパーツを表現する型定義
@@ -273,7 +274,7 @@ export function useReplyMessage(
 	 *
 	 * 各パーツタイプを以下の形式で変換:
 	 * - prompt: "> プロンプト内容" (引用形式、100文字で切り詰め)
-	 * - text: そのまま表示（長いコードブロックは添付ファイル化）
+	 * - text: Discord方言のMarkdownへ変換（長いコードブロックは添付ファイル化）
 	 * - tool-call: "-# ▷ ツール名" (Discord注釈形式)
 	 * - notice: "-# ⚠️ 注意事項" (Discord注釈形式)
 	 * - error: 日本語エラーメッセージ
@@ -302,11 +303,14 @@ export function useReplyMessage(
 					}
 					case "text": {
 						// テキスト部分から長いコードブロックを抽出してファイル化
+						// 表をコードブロックへ変換する前に実行しないと、
+						// 変換後の表がファイル添付になってしまう
 						const { modifiedText, attachments } = extractLargeCodeBlocks(
 							part.text,
 						);
 						allAttachments = [...allAttachments, ...attachments];
-						return modifiedText;
+						// GFM を Discord が描画できる記法へ書き換える
+						return toDiscordMarkdown(modifiedText);
 					}
 					case "tool-call":
 						return `-# ▷ ${convertToolName(part.toolName)}`;

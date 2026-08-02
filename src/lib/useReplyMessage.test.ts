@@ -1,4 +1,5 @@
 import { APICallError } from "ai";
+import type { AttachmentBuilder, Message } from "discord.js";
 import { describe, expect, it } from "vitest";
 import {
 	convertErrorMessage,
@@ -6,6 +7,8 @@ import {
 	extractLargeCodeBlocks,
 	getFileExtension,
 	getMinCodeLines,
+	type ReplyPart,
+	useReplyMessage,
 } from "./useReplyMessage.js";
 
 describe("convertToolName", () => {
@@ -197,5 +200,78 @@ describe("extractLargeCodeBlocks", () => {
 		expect(modifiedText).toContain("前のテキスト");
 		expect(modifiedText).toContain("間のテキスト");
 		expect(modifiedText).toContain("後のテキスト");
+	});
+});
+
+/** 送信されたメッセージを集めながら useReplyMessage を実行するヘルパー */
+const sendParts = async (parts: ReplyPart[]) => {
+	const sent: { content: string; files?: AttachmentBuilder[] }[] = [];
+	const { updateReplyMessage, finishMessage } = useReplyMessage(
+		undefined,
+		[],
+		true,
+		{
+			onNewMessage: async (_isFirst, _currentMessage, messageOptions) => {
+				sent.push(messageOptions);
+				return {
+					id: "message-id",
+					edit: async (options: typeof messageOptions) => {
+						sent[sent.length - 1] = options;
+					},
+				} as unknown as Message<boolean>;
+			},
+		},
+	);
+
+	for (const part of parts) {
+		await updateReplyMessage(part);
+	}
+	finishMessage();
+
+	return sent;
+};
+
+describe("useReplyMessage", () => {
+	it("GFMの表をDiscord向けに変換して送信する", async () => {
+		const table = [
+			"| 項目 | 値 |",
+			"| --- | --- |",
+			...Array.from({ length: 12 }, (_, i) => `| 行${i + 1} | ${i + 1} |`),
+		].join("\n");
+
+		const sent = await sendParts([{ type: "text", text: table }]);
+
+		expect(sent).toHaveLength(1);
+		expect(sent[0].content).toContain("項目 | 値");
+		expect(sent[0].content).not.toContain("| --- |");
+		// 変換で生まれたコードブロックはファイル添付にしない
+		expect(sent[0].files).toBeUndefined();
+	});
+
+	it("長いコードブロックはファイル化し、残りをDiscord向けに変換する", async () => {
+		const code = Array.from({ length: 12 }, (_, i) => `line ${i + 1};`).join(
+			"\n",
+		);
+		const text = `#### 見出し\n\n\`\`\`js\n${code}\n\`\`\`\n\n---\n\n終わり`;
+
+		const sent = await sendParts([{ type: "text", text }]);
+
+		expect(sent[0].files).toHaveLength(1);
+		// `_` はエスケープされるが、Discordはバックスラッシュを取り除いて描画する
+		expect(sent[0].content).toContain("📎 **code\\_1.js** を添付しました");
+		expect(sent[0].content).toContain("**見出し**");
+		expect(sent[0].content).toContain("-# ────");
+	});
+
+	it("tool-callやnoticeのDiscord記法を壊さない", async () => {
+		const sent = await sendParts([
+			{ type: "text", text: "本文です" },
+			{ type: "tool-call", toolName: "MathTool" },
+			{ type: "notice", text: "注意" },
+		]);
+
+		const content = sent[sent.length - 1].content;
+		expect(content).toContain("-# ▷ Math Tool");
+		expect(content).toContain("-# ⚠️ 注意");
 	});
 });

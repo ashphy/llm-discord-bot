@@ -66,6 +66,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **System Prompts**: Located in `src/lib/systemPrompt.ts`
 - **sliceChunks**: `src/utils/sliceChunks.ts` - splits at line boundaries and closes/reopens code fences across the 2000 character limit, so a code block is never left unterminated
 
+#### Markdown Conversion
+- **`src/lib/discordMarkdown.ts`**: rewrites the model's GFM output into the subset Discord can render. Parses with micromark/mdast, replaces unsupported nodes, re-serializes, then restores the escapes Discord-specific syntax must not carry
+- Tables become either a monospace table inside a code block (≤4 columns, ≤55 columns wide, measured in East Asian width) or a label-per-record bullet list. Horizontal rules become a `-#` rule, `####`+ headings become bold, images become links, footnotes move to `-#` lines at the end
+- The source delimiter of `strong` is preserved, because GFM's `__bold__` means underline in Discord
+- Applied in `convertReplyToText`, **after** `extractLargeCodeBlocks` — otherwise a table converted into a code block would be turned into a file attachment
+
 ## Environment Variables Required
 - `BOT_TOKEN` - Discord bot token
 - `OPENAI_API_KEY` - OpenAI API access
