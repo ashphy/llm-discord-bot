@@ -22,9 +22,12 @@ export class MessageReplyListener extends Listener {
 
 		// 返信かどうか確認
 		if (!message.reference?.messageId) return;
-		const repliedMessage = message.channel.messages.cache.get(
-			message.reference.messageId,
-		);
+		// fetch はキャッシュにあればそれを返すため、通常は追加のリクエストを伴わない。
+		// cache.get だけだとBotの再起動でキャッシュが飛んだあと、それ以前の
+		// メッセージへの返信に反応できなくなる
+		const repliedMessage = await message.channel.messages
+			.fetch(message.reference.messageId)
+			.catch(() => undefined);
 		if (!repliedMessage) return;
 
 		// このBotへの返信か確認
