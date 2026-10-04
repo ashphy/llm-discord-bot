@@ -17,7 +17,7 @@ Use this tool to answer questions that require current or factual data from the 
 	}),
 	execute: async ({ question }) => {
 		const { text, sources } = await generateText({
-			model: google("gemini-3.5-flash"),
+			model: google("gemini-3.8-flash"),
 			system:
 				"Qiita、Zenn、侍エンジニアなど、個人が自由に投稿できる信頼性の低い情報源は参照しないでください。公式ドキュメント、公式ブログ、信頼できるニュースサイトなど、一次情報や信頼性の高い情報源を優先してください。",
 			prompt: question,
@@ -27,7 +27,7 @@ Use this tool to answer questions that require current or factual data from the 
 			providerOptions: {
 				google: {
 					thinkingConfig: {
-						thinkingLevel: "minimal",
+						thinkingLevel: "low",
 						includeThoughts: false,
 					},
 				} satisfies GoogleGenerativeAIProviderOptions,

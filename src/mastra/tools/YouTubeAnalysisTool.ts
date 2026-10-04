@@ -24,7 +24,7 @@ export const YouTubeAnalysisTool = createTool({
 		try {
 			const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
 			const response = await ai.models.generateContent({
-				model: "gemini-3.5-flash",
+				model: "gemini-3.8-flash",
 				contents: [
 					userRequest,
 					{

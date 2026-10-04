@@ -34,7 +34,7 @@ export const extractTextFromMessages = (messages: ModelMessage[]): string[] => {
 		.filter((msg) => msg !== undefined);
 };
 
-const MODERATION_MODEL = "gpt-5.4-mini";
+const MODERATION_MODEL = "gpt-6-luna";
 
 const MODERATION_SYSTEM_PROMPT = `You are a content-safety classifier for a Discord bot. Your only job is to flag conversations that contain **clearly and seriously harmful** content. Over-blocking legitimate discussion is the failure mode you must avoid: a false positive is worse than a false negative.
 

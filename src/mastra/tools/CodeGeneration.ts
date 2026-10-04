@@ -30,7 +30,7 @@ export const CodeGenerationTool = createTool({
 	execute: async ({ specification }) => {
 		try {
 			const result = await generateText({
-				model: openai("gpt-5.2"),
+				model: openai("gpt-6.1-sol"),
 				instructions: dedent`You are **CodeGen**, a concise code generation agent for Discord environments.
 
 **Core Principles:**
@@ -54,7 +54,6 @@ Return a JSON object with:
 Return only the JSON object.`,
 				prompt: specification,
 				output: Output.object({ schema: OutputSchema }),
-				temperature: 1,
 			});
 
 			if (!result.output) {

@@ -21,16 +21,16 @@ describe("convertToolName", () => {
 			"Web Page Scraping (FireCrawl)",
 		);
 		expect(convertToolName("WebResearchTool")).toBe(
-			"Web Research (gemini-3.5-flash with Google Search)",
+			"Web Research (gemini-3.8-flash with Google Search)",
 		);
 		expect(convertToolName("CodeGenerationTool")).toBe(
-			"Code Generation (gpt-5.2)",
+			"Code Generation (gpt-6.1-sol)",
 		);
 		expect(convertToolName("DeepThinkTool")).toBe(
 			"Deep Think (gemini-3.1-pro-preview)",
 		);
 		expect(convertToolName("YouTubeAnalysisTool")).toBe(
-			"YouTube Analysis (gemini-3.5-flash)",
+			"YouTube Analysis (gemini-3.8-flash)",
 		);
 	});
 

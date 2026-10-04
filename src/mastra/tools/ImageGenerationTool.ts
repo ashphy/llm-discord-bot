@@ -15,9 +15,9 @@ import {
 	uploadImage,
 } from "../../lib/imageStore.js";
 
-const IMAGE_MODEL = "gpt-image-2";
+const IMAGE_MODEL = "gpt-image-2.5-flare";
 
-/** 入力画像の上限（gpt-image-2 の仕様） */
+/** 入力画像の上限 */
 const MAX_SOURCE_IMAGES = 16;
 
 /** Discordの添付上限に対する安全側の閾値 */
@@ -63,15 +63,9 @@ export const ImageGenerationTool = createTool({
 					Use the references listed in <attachedImages> of the user message, or the reference
 					returned by a previous call of this tool.`,
 			),
-		preserveInputFidelity: z
-			.boolean()
-			.optional()
-			.describe(
-				"Set true when editing and the faces or the style of the source images must be preserved closely.",
-			),
 	}),
 	execute: async (
-		{ prompt, size, quality, sourceImageRefs, preserveInputFidelity },
+		{ prompt, size, quality, sourceImageRefs },
 		{ requestContext },
 	) => {
 		const userId = (requestContext?.get("userId") as string) ?? "unknown";
@@ -84,11 +78,7 @@ export const ImageGenerationTool = createTool({
 
 			const base64 =
 				sourceImages.length > 0
-					? await editImage(prompt, sourceImages, {
-							size,
-							quality,
-							preserveInputFidelity,
-						})
+					? await editImage(prompt, sourceImages, { size, quality })
 					: await generateImage(prompt, { size, quality });
 
 			if (!base64) {
@@ -157,7 +147,6 @@ const loadSourceImages = async (refs: string[] | undefined) => {
 type RenderOptions = {
 	size?: string;
 	quality?: "low" | "medium" | "high";
-	preserveInputFidelity?: boolean;
 };
 
 const generateImage = async (prompt: string, options: RenderOptions) => {
@@ -186,7 +175,6 @@ const editImage = async (
 		size: options.size ?? "1024x1024",
 		quality: options.quality ?? "medium",
 		output_format: "png",
-		input_fidelity: options.preserveInputFidelity ? "high" : "low",
 	});
 
 	return response.data?.[0]?.b64_json;
