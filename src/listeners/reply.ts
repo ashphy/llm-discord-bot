@@ -15,32 +15,23 @@ export class MessageReplyListener extends Listener {
 		});
 	}
 
-	// AIに関する返信であれば、会話を継続する
+	// Botへの返信なら会話を継続し、Botへのメンションなら新しい会話を始める
 	public async run(message: Message) {
 		// ボットが送信したメッセージを無視
 		if (message.author.bot) return;
 
-		// 返信かどうか確認
-		if (!message.reference?.messageId) return;
-		// fetch はキャッシュにあればそれを返すため、通常は追加のリクエストを伴わない。
-		// cache.get だけだとBotの再起動でキャッシュが飛んだあと、それ以前の
-		// メッセージへの返信に反応できなくなる
-		const repliedMessage = await message.channel.messages
-			.fetch(message.reference.messageId)
-			.catch(() => undefined);
-		if (!repliedMessage) return;
+		const botId = this.container.client.user?.id;
+		if (!botId) return;
 
-		// このBotへの返信か確認
-		if (this.container.client.user?.id !== repliedMessage.author.id) return;
+		const referenceMessageId = await findReplyToBot(message, botId);
+		if (!referenceMessageId && !isMentioned(message, botId)) return;
 
-		// Botへの返信なので、会話を継続する
-		const referenceMessageId = message.reference.messageId;
 		const member = message.guild?.members.cache.get(message.author.id);
 
 		const userId = message.author.id;
 		const userName = member ? member.displayName : message.author.displayName;
 
-		const userMessage = message.content;
+		const userMessage = stripMentions(message, botId);
 
 		if (message.channel instanceof TextChannel) {
 			await message.channel.sendTyping();
@@ -81,7 +72,9 @@ export class MessageReplyListener extends Listener {
 		);
 
 		const aiAgent = new AiAgent();
-		await aiAgent.load(referenceMessageId);
+		if (referenceMessageId) {
+			await aiAgent.load(referenceMessageId);
+		}
 
 		try {
 			for (const reason of rejected) {
@@ -151,3 +144,54 @@ export class MessageReplyListener extends Listener {
 		}
 	}
 }
+
+/**
+ * Botのメッセージへの返信であれば、返信先のメッセージIDを返します
+ */
+const findReplyToBot = async (
+	message: Message,
+	botId: string,
+): Promise<string | undefined> => {
+	const referenceMessageId = message.reference?.messageId;
+	if (!referenceMessageId) return undefined;
+
+	// fetch はキャッシュにあればそれを返すため、通常は追加のリクエストを伴わない。
+	// cache.get だけだとBotの再起動でキャッシュが飛んだあと、それ以前の
+	// メッセージへの返信に反応できなくなる
+	const repliedMessage = await message.channel.messages
+		.fetch(referenceMessageId)
+		.catch(() => undefined);
+	if (repliedMessage?.author.id !== botId) return undefined;
+
+	return referenceMessageId;
+};
+
+/**
+ * Botの管理ロール（Botと同名でサーバーに自動作成される）へのメンションか
+ * 補完候補ではBot本人と並んで同じ名前で表示されるため、どちらを選んでも反応させる
+ */
+const isBotRoleMention = (roleTags: { botId?: string } | null, botId: string) =>
+	roleTags?.botId === botId;
+
+/**
+ * Botへのメンションを含むかどうか
+ * @everyone や @here では反応させない
+ */
+const isMentioned = (message: Message, botId: string): boolean =>
+	message.mentions.users.has(botId) ||
+	message.mentions.roles.some((role) => isBotRoleMention(role.tags, botId));
+
+/**
+ * 本文からBotへのメンションを取り除きます
+ */
+const stripMentions = (message: Message, botId: string): string => {
+	const roleIds = message.mentions.roles
+		.filter((role) => isBotRoleMention(role.tags, botId))
+		.map((role) => role.id);
+	return [`<@${botId}>`, `<@!${botId}>`, ...roleIds.map((id) => `<@&${id}>`)]
+		.reduce(
+			(content, mention) => content.replaceAll(mention, ""),
+			message.content,
+		)
+		.trim();
+};

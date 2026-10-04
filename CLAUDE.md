@@ -27,7 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #### Discord Bot Structure
 - **Entry Point**: `src/server.ts` - Initializes SapphireClient with required intents
 - **Commands**: `src/commands/llm.ts` - Slash command `/llm` for AI interactions
-- **Listeners**: `src/listeners/reply.ts` - Handles reply-based conversations with the bot
+- **Listeners**: `src/listeners/reply.ts` - A reply to a bot message continues that conversation; a mention of the bot (or its managed role, which autocomplete lists under the same name) starts a new one
 
 #### AI Agent System
 - **Main Agent**: `src/mastra/agents/diacordAgent.ts` - Discord-specific agent using Claude Sonnet 4
@@ -60,7 +60,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **`src/mastra/tools/ChannelHistoryTool.ts`**: lets the model page further back (`before` + `limit`, max 50). Restricted to the calling channel, which is passed through `RequestContext` (`src/lib/channelMessages.ts`)
 
 #### Conversation Flow
-1. User sends `/llm` command or replies to bot message
+1. User sends `/llm` command, mentions the bot, or replies to bot message
 2. Message content moderated via `src/lib/moderation.ts`
 3. `AiAgent` processes message through Mastra's Discord agent
 4. Streaming response with tool calls displayed to user
