@@ -133,6 +133,7 @@ export class MessageReplyListener extends Listener {
 					},
 				},
 				images,
+				{ channel: message.channel, before: message.id },
 			);
 		} catch (error) {
 			console.error("Error in Reply Command:", error);

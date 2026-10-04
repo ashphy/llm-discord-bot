@@ -142,6 +142,7 @@ export class LlmCommand extends Command {
 					},
 				},
 				images,
+				interaction.channel ? { channel: interaction.channel } : undefined,
 			);
 		} catch (error) {
 			console.error("Error in LLM command:", error);

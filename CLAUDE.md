@@ -55,6 +55,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Returning the bytes from a tool would blow up the context, so the tool stores the image in S3 and pushes it onto a queue held in `RequestContext` (`src/lib/generatedImages.ts`). `AiAgent` drains the queue while reading the stream and hands each image to the `onImage` callback, which posts it as a standalone Discord message
 - To edit an image, the model passes an `s3://` reference: user attachments are listed in `<attachedImages>` on the user message, and generated images come back as the tool result's `ref`
 
+#### Channel Context
+- The conversation history only holds exchanges with the bot, so `AiAgent` prepends the 5 messages preceding the call (bot's own messages excluded) to the user message as `<recentChannelMessages>`. It is saved with the conversation, so later turns still see what the bot saw
+- **`src/mastra/tools/ChannelHistoryTool.ts`**: lets the model page further back (`before` + `limit`, max 50). Restricted to the calling channel, which is passed through `RequestContext` (`src/lib/channelMessages.ts`)
+
 #### Conversation Flow
 1. User sends `/llm` command or replies to bot message
 2. Message content moderated via `src/lib/moderation.ts`

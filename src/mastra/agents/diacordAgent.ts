@@ -5,6 +5,7 @@ import { Memory } from "@mastra/memory";
 import { readWorkingMemory } from "../../db/workingMemory.js";
 import { SYSTEM_PROMPT_GAL } from "../../lib/systemPrompt.js";
 import { mcp } from "../mcp-servers/context7.js";
+import { ChannelHistoryTool } from "../tools/ChannelHistoryTool.js";
 import { CodeExecutionTool } from "../tools/CodeExecutionTool.js";
 import { CodeGenerationTool } from "../tools/CodeGeneration.js";
 import { DeepThinkTool } from "../tools/DeepThinkTool.js";
@@ -46,6 +47,7 @@ export const discordAgent = new Agent({
 		FlightSearchTool,
 		ImageGenerationTool,
 		UpdateWorkingMemoryTool,
+		ChannelHistoryTool,
 		...(await mcp.listTools()),
 	},
 });

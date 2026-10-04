@@ -1,7 +1,13 @@
 import { RequestContext } from "@mastra/core/di";
+import type { TextBasedChannel } from "discord.js";
 import { readConversation } from "../db/readConversations.js";
 import { saveConversation } from "../db/saveConversation.js";
 import { mastra } from "../mastra/index.js";
+import {
+	CHANNEL_KEY,
+	fetchChannelMessages,
+	formatChannelMessages,
+} from "./channelMessages.js";
 import type { Conversation } from "./conversation.js";
 import type { StoredImagePart } from "./discordImages.js";
 import {
@@ -16,7 +22,19 @@ type LLMBotRuntimeContext = {
 	userId: string;
 	/** 画像生成ツールが作った画像を受け取るためのキュー */
 	generatedImages: GeneratedImage[];
+	/** 過去のメッセージを取得するツールが読むチャンネル */
+	channel?: TextBasedChannel;
 };
+
+/** 呼び出し時に注入する直前のメッセージ数 */
+const RECENT_MESSAGE_COUNT = 5;
+
+/**
+ * 直前のメッセージを探すときに取得する件数
+ * Bot自身のメッセージを除いても RECENT_MESSAGE_COUNT 件残るよう多めに取る。
+ * Discord API の上限 (100件) 以内なので1回のリクエストで済む
+ */
+const RECENT_MESSAGE_FETCH_LIMIT = 20;
 
 export class AiAgent {
 	conversation: Conversation;
@@ -32,6 +50,7 @@ export class AiAgent {
 	 * @param username
 	 * @param userMesage
 	 * @param images 添付画像（S3への参照を持つパート）
+	 * @param channelContext 呼び出し元のチャンネル。before より前のメッセージを注入する
 	 * @returns
 	 */
 	async thinkAnswer(
@@ -47,14 +66,22 @@ export class AiAgent {
 			onImage?: (image: GeneratedImage) => Promise<void>;
 		} = {},
 		images: StoredImagePart[] = [],
+		channelContext?: { channel: TextBasedChannel; before?: string },
 	) {
+		const recentMessages = channelContext
+			? await this.readRecentMessages(
+					channelContext.channel,
+					channelContext.before,
+				)
+			: "";
+
 		// 画像生成ツールが添付画像を編集できるよう、S3への参照をテキストにも載せる
 		const attachedImages =
 			images.length > 0
 				? `\n<attachedImages>\n${images.map((image) => image.image).join("\n")}\n</attachedImages>`
 				: "";
 
-		const promptText = `<username>${username}</username>
+		const promptText = `${recentMessages}<username>${username}</username>
 <userMessage>${userMesage}</userMessage>${attachedImages}`;
 
 		this.conversation.messages.push({
@@ -74,6 +101,9 @@ export class AiAgent {
 
 		const requestContext = new RequestContext<LLMBotRuntimeContext>();
 		requestContext.set("userId", userId);
+		if (channelContext) {
+			requestContext.set(CHANNEL_KEY, channelContext.channel);
+		}
 
 		// ツールはこのキューに生成画像を積み、ストリームを読みながら回収してDiscordへ送る
 		const generatedImages: GeneratedImage[] = [];
@@ -140,6 +170,32 @@ export class AiAgent {
 		await flushGeneratedImages();
 		await callbacks.onFinish?.();
 		return text;
+	}
+
+	/**
+	 * チャンネルの直前のメッセージを、ユーザーメッセージに載せる形で返します
+	 * Bot自身のメッセージは会話履歴に含まれているため除外します。
+	 * 取得できなくても応答は続けられるため、失敗時は空文字を返します。
+	 */
+	private async readRecentMessages(
+		channel: TextBasedChannel,
+		before?: string,
+	): Promise<string> {
+		try {
+			const messages = (
+				await fetchChannelMessages(channel, {
+					limit: RECENT_MESSAGE_FETCH_LIMIT,
+					before,
+				})
+			)
+				.filter((message) => message.author.id !== channel.client.user.id)
+				.slice(-RECENT_MESSAGE_COUNT);
+			if (messages.length === 0) return "";
+			return `<recentChannelMessages>\n${formatChannelMessages(messages)}\n</recentChannelMessages>\n`;
+		} catch (error) {
+			console.error("Failed to fetch recent channel messages:", error);
+			return "";
+		}
 	}
 
 	/**
