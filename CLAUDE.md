@@ -59,6 +59,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - The conversation history only holds exchanges with the bot, so `AiAgent` prepends the 5 messages preceding the call (bot's own messages excluded) to the user message as `<recentChannelMessages>`. It is saved with the conversation, so later turns still see what the bot saw
 - **`src/mastra/tools/ChannelHistoryTool.ts`**: lets the model page further back (`before` + `limit`, max 50). Restricted to the calling channel, which is passed through `RequestContext` (`src/lib/channelMessages.ts`)
 
+#### Reminders
+- **`src/mastra/tools/ReminderTools.ts`**: `SetReminderTool` / `ListRemindersTool` / `CancelReminderTool`. One-time reminders take `at`, recurring ones take a cron expression evaluated in Asia/Tokyo (≥1 hour interval, 10 per user)
+- The tool runs before the reply message exists, so it queues the reminder in `RequestContext`; `AiAgent.save` commits it and gives one-time reminders the reply's message id as `conversationId`
+- **`src/lib/reminderScheduler.ts`**: holds every reminder in memory with a `setTimeout`. The `Reminders` DynamoDB table (key `ReminderId`) is only read once at startup (`src/listeners/reminderScheduler.ts`), so running more than one bot process would notify twice
+- **`src/lib/notifyReminder.ts`**: one-time reminders continue the original conversation as a reply; recurring ones start a new conversation in the channel, because continuing one conversation forever would hit the 400KB item limit. The model receives `<reminder>` as the user message
+
 #### Conversation Flow
 1. User sends `/llm` command, mentions the bot, or replies to bot message
 2. Message content moderated via `src/lib/moderation.ts`

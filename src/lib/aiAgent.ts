@@ -17,13 +17,18 @@ import {
 } from "./generatedImages.js";
 import { hydrateImageParts } from "./imageStore.js";
 import { moderate } from "./moderation.js";
+import { PENDING_REMINDERS_KEY, type PendingReminder } from "./reminder.js";
+import { reminderScheduler } from "./reminderScheduler.js";
 
 type LLMBotRuntimeContext = {
 	userId: string;
+	userName: string;
 	/** 画像生成ツールが作った画像を受け取るためのキュー */
 	generatedImages: GeneratedImage[];
 	/** 過去のメッセージを取得するツールが読むチャンネル */
 	channel?: TextBasedChannel;
+	/** リマインダーのツールが登録したリマインダー。会話の保存時に確定させる */
+	pendingReminders: PendingReminder[];
 };
 
 /** 呼び出し時に注入する直前のメッセージ数 */
@@ -38,6 +43,7 @@ const RECENT_MESSAGE_FETCH_LIMIT = 20;
 
 export class AiAgent {
 	conversation: Conversation;
+	private pendingReminders: PendingReminder[] = [];
 
 	constructor() {
 		this.conversation = {
@@ -101,6 +107,8 @@ export class AiAgent {
 
 		const requestContext = new RequestContext<LLMBotRuntimeContext>();
 		requestContext.set("userId", userId);
+		requestContext.set("userName", username);
+		requestContext.set(PENDING_REMINDERS_KEY, this.pendingReminders);
 		if (channelContext) {
 			requestContext.set(CHANNEL_KEY, channelContext.channel);
 		}
@@ -211,7 +219,7 @@ export class AiAgent {
 	}
 
 	/**
-	 * 会話履歴をDBに保存します
+	 * 会話履歴をDBに保存し、この応答で登録されたリマインダーを確定させます
 	 *
 	 * 応答が複数のメッセージに分かれた場合、どのメッセージへの返信からでも
 	 * 会話を辿れるように、作成したメッセージIDをすべて渡す必要があります。
@@ -222,5 +230,12 @@ export class AiAgent {
 	async save(messageId: string, aliasMessageIds: string[] = []) {
 		// 会話履歴を保存
 		await saveConversation(messageId, this.conversation, aliasMessageIds);
+
+		// 1回だけのリマインダーは、この応答への返信として会話の続きを通知する
+		for (const reminder of this.pendingReminders.splice(0)) {
+			await reminderScheduler.add(
+				reminder.cron ? reminder : { ...reminder, conversationId: messageId },
+			);
+		}
 	}
 }
