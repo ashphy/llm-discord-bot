@@ -11,6 +11,11 @@ import { CodeGenerationTool } from "../tools/CodeGeneration.js";
 import { DeepThinkTool } from "../tools/DeepThinkTool.js";
 import { FlightSearchTool } from "../tools/FlightSearchTool.js";
 import { ImageGenerationTool } from "../tools/ImageGenerationTool.js";
+import {
+	CancelReminderTool,
+	ListRemindersTool,
+	SetReminderTool,
+} from "../tools/ReminderTools.js";
 import { UpdateWorkingMemoryTool } from "../tools/UpdateWorkingMemoryTool.js";
 import { WebPageScrapingTool } from "../tools/WebPageScrapingTool.js";
 import { WebResearchTool } from "../tools/WebResearchTool.js";
@@ -48,6 +53,9 @@ export const discordAgent = new Agent({
 		ImageGenerationTool,
 		UpdateWorkingMemoryTool,
 		ChannelHistoryTool,
+		SetReminderTool,
+		ListRemindersTool,
+		CancelReminderTool,
 		...(await mcp.listTools()),
 	},
 });

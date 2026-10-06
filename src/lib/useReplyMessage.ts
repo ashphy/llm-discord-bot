@@ -41,13 +41,17 @@ type ReplyErrorPart = { type: "error"; error: unknown };
 /** 処理は継続するがユーザーに伝えたい注意事項を表すパート */
 type ReplyNoticePart = { type: "notice"; text: string };
 
+/** ユーザーへのメンション。リマインダーの通知でユーザーに気づかせるために使う */
+type ReplyMentionPart = { type: "mention"; userId: string };
+
 /** 返信メッセージのパートを表現するユニオン型 */
 export type ReplyPart =
 	| ReplyPromptPart
 	| ReplyTextPart
 	| ReplyToolCallPart
 	| ReplyErrorPart
-	| ReplyNoticePart;
+	| ReplyNoticePart
+	| ReplyMentionPart;
 
 /**
  * ツール名をユーザー表示用の日本語名に変換する関数
@@ -291,6 +295,7 @@ export function useReplyMessage(
 	 * - text: Discord方言のMarkdownへ変換（長いコードブロックは添付ファイル化）
 	 * - tool-call: "-# ▷ ツール名" (Discord注釈形式)
 	 * - notice: "-# ⚠️ 注意事項" (Discord注釈形式)
+	 * - mention: "<@ユーザーID>"
 	 * - error: 日本語エラーメッセージ
 	 *
 	 * @returns Discord表示用のテキストと添付ファイル配列
@@ -330,6 +335,8 @@ export function useReplyMessage(
 						return `-# ▷ ${convertToolName(part.toolName)}`;
 					case "notice":
 						return `-# ⚠️ ${part.text}`;
+					case "mention":
+						return `<@${part.userId}>`;
 					case "error": {
 						return convertErrorMessage(part.error);
 					}
