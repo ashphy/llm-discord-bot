@@ -27,7 +27,7 @@
 	"description": "",
 	"dependencies": {
 		"@ai-sdk/anthropic": "^4.0.27",
-		"@ai-sdk/google": "^4.0.31",
+		"@ai-sdk/google-vertex": "^5.0.138",
 		"@ai-sdk/openai": "^4.0.27",
 		"@aws-sdk/client-dynamodb": "^3.1101.0",
 		"@aws-sdk/client-s3": "^3.1101.0",
@@ -44,6 +44,7 @@
 		"ai": "^7.0.47",
 		"croner": "^10.0.1",
 		"discord.js": "^14.27.0",
+		"google-auth-library": "^11.3.4",
 		"mathjs": "^15.2.0",
 		"mdast-util-from-markdown": "^2.0.3",
 		"mdast-util-gfm": "^3.1.0",

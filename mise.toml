@@ -3,3 +3,4 @@
 node = "26.5.0"
 hadolint = "2.15.1"
 trivy = "0.72.0"
+gcloud = "593.0.0"

@@ -34,6 +34,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Core Logic**: `src/lib/aiAgent.ts` - AiAgent class managing conversations and streaming responses
 - **Memory**: Uses LibSQLStore with in-memory database for conversation persistence
 - **Tools**: Located in `src/mastra/tools/` including web research, code execution, YouTube analysis
+- **Gemini via Vertex AI**: `src/lib/vertexAi.ts` builds both the `@ai-sdk/google-vertex` provider and the `@google/genai` client from a service account key. The Gemini API (AI Studio) moved to prepaid billing in 2026, so the bot calls Vertex AI instead; `gemini-3.1-pro-preview` is served only from the `global` location
 - **MCP Integration**: Context7 MCP server for documentation retrieval
 
 #### Database & Storage
@@ -87,7 +88,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Environment Variables Required
 - `BOT_TOKEN` - Discord bot token
 - `OPENAI_API_KEY` - OpenAI API access
-- `GOOGLE_GENERATIVE_AI_API_KEY` - Google AI access  
+- `GOOGLE_CLOUD_PROJECT` - Google Cloud project that hosts Vertex AI
+- `GOOGLE_CLOUD_LOCATION` - Vertex AI location, normally `global`
+- `GOOGLE_APPLICATION_CREDENTIALS_JSON` - service account key JSON as a single line (needs `roles/aiplatform.user`)
 - `ANTHROPIC_API_KEY` - Anthropic Claude access
 - `PERPLEXITY_API_KEY` - Perplexity API access
 - `FIRECRAWL_API_KEY` - Web scraping service access

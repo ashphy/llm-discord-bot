@@ -1,7 +1,7 @@
-import { type GoogleGenerativeAIProviderOptions, google } from "@ai-sdk/google";
 import { createTool } from "@mastra/core/tools";
 import { generateText } from "ai";
 import { z } from "zod";
+import { vertex } from "../../lib/vertexAi.js";
 
 export const WebResearchTool = createTool({
 	id: "Web Research",
@@ -17,12 +17,12 @@ Use this tool to answer questions that require current or factual data from the 
 	}),
 	execute: async ({ question }) => {
 		const { text, sources } = await generateText({
-			model: google("gemini-3.8-flash"),
+			model: vertex("gemini-3.8-flash"),
 			system:
 				"Qiita、Zenn、侍エンジニアなど、個人が自由に投稿できる信頼性の低い情報源は参照しないでください。公式ドキュメント、公式ブログ、信頼できるニュースサイトなど、一次情報や信頼性の高い情報源を優先してください。",
 			prompt: question,
 			tools: {
-				google_search: google.tools.googleSearch({}),
+				google_search: vertex.tools.googleSearch({}),
 			},
 			providerOptions: {
 				google: {
@@ -30,7 +30,7 @@ Use this tool to answer questions that require current or factual data from the 
 						thinkingLevel: "low",
 						includeThoughts: false,
 					},
-				} satisfies GoogleGenerativeAIProviderOptions,
+				},
 			},
 		});
 

@@ -1,8 +1,8 @@
-import { google } from "@ai-sdk/google";
 import { createTool } from "@mastra/core/tools";
 import { generateText } from "ai";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
+import { vertex } from "../../lib/vertexAi.js";
 
 export const DeepThinkTool = createTool({
 	id: "Deep Think",
@@ -23,7 +23,7 @@ export const DeepThinkTool = createTool({
 	}),
 	execute: async ({ question }) => {
 		const { text, sources } = await generateText({
-			model: google("gemini-3.1-pro-preview"),
+			model: vertex("gemini-3.1-pro-preview"),
 			prompt: question,
 		});
 

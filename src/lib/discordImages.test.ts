@@ -4,7 +4,9 @@ vi.mock("../env.js", () => ({
 	env: {
 		BOT_TOKEN: "test-token",
 		OPENAI_API_KEY: "test-key",
-		GOOGLE_GENERATIVE_AI_API_KEY: "test-key",
+		GOOGLE_CLOUD_PROJECT: "test-project",
+		GOOGLE_CLOUD_LOCATION: "global",
+		GOOGLE_APPLICATION_CREDENTIALS_JSON: "{}",
 		ANTHROPIC_API_KEY: "test-key",
 		PERPLEXITY_API_KEY: "test-key",
 		FIRECRAWL_API_KEY: "test-key",

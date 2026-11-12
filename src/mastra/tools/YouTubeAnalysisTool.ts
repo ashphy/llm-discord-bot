@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
 import { createTool } from "@mastra/core/tools";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
-import { env } from "../../env.js";
+import { genAi } from "../../lib/vertexAi.js";
 
 export const YouTubeAnalysisTool = createTool({
 	id: "YouTube Analysis",
@@ -22,14 +21,15 @@ export const YouTubeAnalysisTool = createTool({
 	}),
 	execute: async ({ videoUrl, userRequest }) => {
 		try {
-			const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
-			const response = await ai.models.generateContent({
+			const response = await genAi.models.generateContent({
 				model: "gemini-3.8-flash",
 				contents: [
 					userRequest,
 					{
+						// Vertex AI は mimeType を必須とする。YouTube URL には video/mp4 を指定する
 						fileData: {
 							fileUri: videoUrl,
+							mimeType: "video/mp4",
 						},
 					},
 				],

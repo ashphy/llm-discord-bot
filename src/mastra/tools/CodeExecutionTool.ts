@@ -1,8 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
 import { createTool } from "@mastra/core/tools";
 import { dedent } from "ts-dedent";
 import { z } from "zod";
-import { env } from "../../env.js";
+import { genAi } from "../../lib/vertexAi.js";
 
 export const CodeExecutionTool = createTool({
 	id: "code-execution",
@@ -18,8 +17,7 @@ export const CodeExecutionTool = createTool({
 		),
 	}),
 	execute: async ({ specification }) => {
-		const ai = new GoogleGenAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY });
-		const response = await ai.models.generateContent({
+		const response = await genAi.models.generateContent({
 			model: "gemini-3.1-pro-preview",
 			contents: [specification],
 			config: {
