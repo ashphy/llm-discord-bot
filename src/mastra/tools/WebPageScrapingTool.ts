@@ -73,6 +73,34 @@ const mapStatusCode = (
 	};
 };
 
+/**
+ * ツールが返す本文の上限（UTF-8 のバイト数）
+ *
+ * ツールの結果は会話履歴として DynamoDB に保存され、1項目の上限は 400KB。
+ * 複数のリリースを1ページに載せた changelog のように、1ページで上限を超えることがある。
+ * Firecrawl には長さを制限するオプションがないため、ここで切り詰める。
+ */
+export const MAX_CONTENT_BYTES = 50 * 1024;
+
+/**
+ * 本文を上限のバイト数までに切り詰めます
+ */
+export const truncateContent = (
+	content: string,
+	maxBytes = MAX_CONTENT_BYTES,
+): { content: string; truncated: boolean; originalBytes: number } => {
+	const buffer = Buffer.from(content, "utf8");
+	if (buffer.length <= maxBytes) {
+		return { content, truncated: false, originalBytes: buffer.length };
+	}
+	// 途中で切れたマルチバイト文字は置換文字になるので取り除く
+	const truncated = buffer
+		.subarray(0, maxBytes)
+		.toString("utf8")
+		.replace(/\uFFFD+$/, "");
+	return { content: truncated, truncated: true, originalBytes: buffer.length };
+};
+
 export const WebPageScrapingTool = createTool({
 	id: "Web Page Scraping",
 	description: "Scrape a web page for specific information.",
@@ -90,9 +118,17 @@ export const WebPageScrapingTool = createTool({
 				onlyMainContent: true,
 			});
 
+			const { content, truncated, originalBytes } = truncateContent(
+				document.markdown ?? "",
+			);
+
 			return {
 				title: document.metadata?.title,
-				content: document.markdown,
+				content,
+				...(truncated && {
+					truncated,
+					note: `ページが長いため、全 ${originalBytes} バイトのうち先頭 ${MAX_CONTENT_BYTES} バイトだけを返しています。`,
+				}),
 			};
 		} catch (error) {
 			if (error instanceof SdkError) {
